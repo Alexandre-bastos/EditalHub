@@ -2,17 +2,40 @@
 import DashboardLayout from '../layouts/DashboardLayout.astro';
 import prisma from '../lib/prisma';
 
-const totalOrganizadoras = await prisma.organizadora.count();
-const totalEditais = await prisma.edital.count();
-const editaisPendentes = await prisma.edital.count({ where: { status_processamento: 'pendente' } });
-const ultimosEditais = await prisma.edital.findMany({
-  take: 5,
-  orderBy: { data_download: 'desc' },
-  include: { organizadora: true }
-});
+let totalOrganizadoras = 0;
+let totalEditais = 0;
+let editaisPendentes = 0;
+let ultimosEditais = [];
+let errorMsg = null;
+
+try {
+  console.log('--- Debug Dashboard ---');
+  console.log('DATABASE_URL presente:', !!process.env.DATABASE_URL);
+  
+  totalOrganizadoras = await prisma.organizadora.count();
+  totalEditais = await prisma.edital.count();
+  editaisPendentes = await prisma.edital.count({ where: { status_processamento: 'pendente' } });
+  ultimosEditais = await prisma.edital.findMany({
+    take: 5,
+    orderBy: { data_download: 'desc' },
+    include: { organizadora: true }
+  });
+  console.log('Dados carregados com sucesso');
+} catch (err) {
+  console.error('Erro ao carregar Dashboard:', err);
+  errorMsg = err instanceof Error ? err.message : String(err);
+}
 ---
 
 <DashboardLayout title="Geral">
+  {errorMsg && (
+    <div class="glass-card p-6 border-red-500/50 bg-red-500/10 mb-8">
+      <h3 class="text-red-500 font-bold mb-2">Erro de Conexão com o Banco</h3>
+      <p class="text-sm text-gray-400 font-mono">{errorMsg}</p>
+      <p class="text-xs text-gray-500 mt-4 italic">Verifique os logs na Vercel para mais detalhes.</p>
+    </div>
+  )}
+
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
     <div class="glass-card p-6 flex flex-col gap-2">
       <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Bancas Ativas</span>
