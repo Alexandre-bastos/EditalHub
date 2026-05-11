@@ -46,6 +46,7 @@ model Concurso {
   profissao            String?  @db.VarChar(255)
   registro_profissional String?  @db.VarChar(100)
   salario_inicial      Decimal? @db.Decimal(18, 2)
+  taxa_inscricao       Decimal? @db.Decimal(18, 2)
   idade_minima         Int?
   idade_maxima         Int?
   inscricao_inicio     DateTime?
@@ -53,6 +54,20 @@ model Concurso {
   link_inscricao       String?  @db.VarChar(500)
 
   edital               Edital   @relation(fields: [edital_id], references: [id])
+  cargos               Vaga[]
 
   @@map("concurso")
+}
+
+model Vaga {
+  id           String   @id @default(uuid())
+  concurso_id  String
+  concurso     Concurso @relation(fields: [concurso_id], references: [id])
+  nome_cargo   String   @db.VarChar(255)
+  escolaridade String?  @db.VarChar(100)
+  salario      Decimal? @db.Decimal(18, 2)
+  quantidade   Int?
+  requisitos   String?  @db.NText
+
+  @@map("vaga")
 }
