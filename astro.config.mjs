@@ -12,7 +12,7 @@ export default defineConfig({
     },
   }),
   ssr: {
-    noExternal: ['@prisma/client'],
+    noExternal: ['@prisma/client', 'pdf-parse'],
   },
   integrations: [react()],
   vite: {
