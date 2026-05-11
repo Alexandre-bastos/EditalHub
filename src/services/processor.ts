@@ -2,8 +2,9 @@ import prisma from '../lib/prisma';
 import { geminiService } from './gemini';
 import { azureStorage } from './azureStorage';
 import { BlobServiceClient } from '@azure/storage-blob';
-// @ts-ignore
-import pdf from 'pdf-parse/lib/pdf-parse.js';
+import * as pdfParse from 'pdf-parse';
+// @ts-ignore - Handle ESM/CJS interop for pdf-parse
+const pdf = (pdfParse.default || pdfParse) as any;
 
 export async function processEdital(editalId: string) {
   console.log(`Iniciando processamento do edital: ${editalId}`);
