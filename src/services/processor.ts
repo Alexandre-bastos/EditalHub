@@ -3,10 +3,6 @@ import prisma from '../lib/prisma';
 import { geminiService } from './gemini';
 import { azureStorage } from './azureStorage';
 import { BlobServiceClient } from '@azure/storage-blob';
-import * as pdfParse from 'pdf-parse';
-// @ts-ignore - Handle ESM/CJS interop for pdf-parse
-const pdf = (pdfParse.default || pdfParse) as any;
-
 export async function processEdital(editalId: string) {
   console.log(`Iniciando processamento do edital: ${editalId}`);
 
@@ -32,17 +28,16 @@ export async function processEdital(editalId: string) {
     const downloadResponse = await blobClient.download();
     const buffer = await streamToBuffer(downloadResponse.readableStreamBody);
 
-    // 2. Extração de Texto
-    console.log('Extraindo texto do PDF...');
-    const pdfData = await pdf(buffer);
-    const fullText = pdfData.text;
+    // 2. Análise Gemini (Direto do PDF)
+    console.log('Enviando PDF para análise multimodal do Gemini...');
+    const analysis = await geminiService.analyzeEdital(buffer);
 
-    // 3. Análise Gemini
-    console.log('Enviando para análise do Gemini...');
-    const analysis = await geminiService.analyzeEdital(fullText);
-
-    // 4. Salvar no Banco
+    // 3. Salvar no Banco
     console.log('Salvando dados extraídos...');
+    
+    // Guardar o texto completo não é mais necessário aqui, 
+    // mas se quiser guardar um resumo ou algo do tipo, pode ser feito depois.
+    const fullText = "Texto extraído via Gemini Vision/Multimodal";
     
     // Criar ou Atualizar Concurso
     const concurso = await prisma.concurso.create({

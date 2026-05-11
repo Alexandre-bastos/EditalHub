@@ -21,12 +21,12 @@ export class GeminiService {
     });
   }
 
-  async analyzeEdital(text: string) {
+  async analyzeEdital(pdfBuffer: Buffer) {
     if (!apiKey) throw new Error('Gemini API Key missing');
 
     const prompt = `
       Você é um especialista em análise de editais de concursos públicos.
-      Analise o texto do edital fornecido e extraia as informações essenciais em formato JSON.
+      Analise o edital fornecido e extraia as informações essenciais em formato JSON.
       
       Informações necessárias:
       1. Nome do concurso.
@@ -42,9 +42,9 @@ export class GeminiService {
         "estado": "string",
         "escolaridade": "string",
         "taxa_inscricao": number,
-        "inscricao_inicio": "ISO Date string",
-        "inscricao_fim": "ISO Date string",
-        "data_prova": "ISO Date string",
+        "inscricao_inicio": "ISO Date string (YYYY-MM-DD)",
+        "inscricao_fim": "ISO Date string (YYYY-MM-DD)",
+        "data_prova": "ISO Date string (YYYY-MM-DD)",
         "cargos": [
           {
             "nome_cargo": "string",
@@ -55,14 +55,28 @@ export class GeminiService {
           }
         ]
       }
-
-      Texto do Edital:
-      ${text.substring(0, 100000)} // Limitando a 100k chars por segurança inicial
     `;
 
-    const result = await this.model.generateContent(prompt);
+    const result = await this.model.generateContent([
+      {
+        inlineData: {
+          data: pdfBuffer.toString("base64"),
+          mimeType: "application/pdf"
+        }
+      },
+      prompt
+    ]);
+    
     const response = await result.response;
-    return JSON.parse(response.text());
+    const text = response.text();
+    
+    try {
+      const cleanJson = text.replace(/```json|```/g, "").trim();
+      return JSON.parse(cleanJson);
+    } catch (error) {
+      console.error('Erro ao processar resposta do Gemini:', text);
+      throw new Error('Resposta da IA não é um JSON válido');
+    }
   }
 }
 
