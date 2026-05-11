@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "collect": "tsx run-collector.ts"
+    "collect": "tsx run-collector.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@astrojs/node": "^10.1.0",
