@@ -1,7 +1,8 @@
-import axios from 'axios';
-import pdf from 'pdf-parse';
 import prisma from '../lib/prisma';
 import { geminiService } from './gemini';
+import { azureStorage } from './azureStorage';
+import { BlobServiceClient } from '@azure/storage-blob';
+import pdf from 'pdf-parse';
 
 export async function processEdital(editalId: string) {
   console.log(`Iniciando processamento do edital: ${editalId}`);
@@ -16,20 +17,22 @@ export async function processEdital(editalId: string) {
       throw new Error('Edital não encontrado ou arquivo não disponível');
     }
 
-    // 1. Download do PDF do Azure (ou via URL pública do Blob)
-    const blobUrl = `https://storageappvidanavida.blob.core.windows.net/editalhub/${edital.nome_arquivo}`;
-    console.log(`Baixando PDF: ${blobUrl}`);
+    // 1. Download do PDF do Azure usando o Connection String (Seguro)
+    console.log(`Baixando arquivo do Azure: ${edital.nome_arquivo}`);
     
-    const response = await axios({
-      url: blobUrl,
-      method: 'GET',
-      responseType: 'arraybuffer'
-    });
+    const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING || '';
+    const containerName = process.env.AZURE_STORAGE_CONTAINER || 'editalhub';
+    const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const blobClient = containerClient.getBlobClient(edital.nome_arquivo);
+    
+    const downloadResponse = await blobClient.download();
+    const buffer = await streamToBuffer(downloadResponse.readableStreamBody);
 
     // 2. Extração de Texto
     console.log('Extraindo texto do PDF...');
-    const data = await pdf(response.data);
-    const fullText = data.text;
+    const pdfData = await pdf(buffer);
+    const fullText = pdfData.text;
 
     // 3. Análise Gemini
     console.log('Enviando para análise do Gemini...');
@@ -81,4 +84,17 @@ export async function processEdital(editalId: string) {
     });
     throw error;
   }
+}
+
+async function streamToBuffer(readableStream: any): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: any[] = [];
+    readableStream.on('data', (data: any) => {
+      chunks.push(data instanceof Buffer ? data : Buffer.from(data));
+    });
+    readableStream.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+    readableStream.on('error', reject);
+  });
 }
