@@ -11,6 +11,9 @@ export default defineConfig({
       enabled: true,
     },
   }),
+  ssr: {
+    noExternal: ['@prisma/client'],
+  },
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
