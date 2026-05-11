@@ -1,3 +1,4 @@
+// Trigger redeploy to load env vars
 import prisma from '../lib/prisma';
 import { geminiService } from './gemini';
 import { azureStorage } from './azureStorage';
