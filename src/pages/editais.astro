@@ -1,0 +1,73 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import prisma from '../lib/prisma';
+
+const editais = await prisma.edital.findMany({
+  orderBy: { data_download: 'desc' },
+  include: { organizadora: true }
+});
+---
+
+<DashboardLayout title="Monitoramento de Editais">
+  <div class="glass-card overflow-hidden">
+    <div class="px-6 py-4 border-b border-white/5 bg-white/[0.01]">
+      <div class="flex justify-between items-center">
+        <h3 class="font-outfit font-semibold">Repositório de Arquivos</h3>
+        <span class="text-xs text-gray-500">{editais.length} arquivos totais</span>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="text-xs text-gray-500 uppercase tracking-widest bg-white/[0.02]">
+            <th class="px-6 py-4 font-medium">Concurso</th>
+            <th class="px-6 py-4 font-medium">Banca</th>
+            <th class="px-6 py-4 font-medium">Data Coleta</th>
+            <th class="px-6 py-4 font-medium">Status</th>
+            <th class="px-6 py-4 font-medium">Arquivo</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          {editais.map(edital => (
+            <tr class="hover:bg-white/[0.01] transition-colors">
+              <td class="px-6 py-4">
+                <p class="text-sm font-semibold text-gray-200">{edital.nome_edital}</p>
+                <p class="text-[10px] text-gray-500 mt-0.5 truncate max-w-xs">{edital.url_edital}</p>
+              </td>
+              <td class="px-6 py-4">
+                <span class="px-2 py-1 bg-white/5 text-gray-400 text-[10px] font-bold rounded uppercase">
+                  {edital.organizadora.nome}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-400">
+                {edital.data_download ? new Date(edital.data_download).toLocaleString('pt-BR') : '-'}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class={`w-1.5 h-1.5 rounded-full ${
+                    edital.status_processamento === 'pendente' ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]'
+                  }`}></span>
+                  <span class={`text-[10px] font-bold uppercase ${
+                    edital.status_processamento === 'pendente' ? 'text-amber-500' : 'text-green-500'
+                  }`}>
+                    {edital.status_processamento}
+                  </span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                {edital.nome_arquivo ? (
+                  <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-400"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7 20 7"/></svg>
+                    <span class="text-[10px] text-gray-500 font-mono">Azure Blob</span>
+                  </div>
+                ) : (
+                  <span class="text-[10px] text-gray-600 italic">Aguardando...</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</DashboardLayout>

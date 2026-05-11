@@ -1,0 +1,123 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-br" class="dark">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="EditalHub - Gestão Inteligente de Editais" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | EditalHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+	</head>
+	<body class="bg-[#0a0a0b] text-gray-100 font-inter min-h-screen flex">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-white/5 bg-[#0f0f11] flex flex-col fixed h-full">
+      <div class="p-6">
+        <h1 class="text-2xl font-outfit font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
+          EditalHub
+        </h1>
+        <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Inteligência em Concursos</p>
+      </div>
+
+      <nav class="flex-1 px-4 space-y-2">
+        <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-gray-400 hover:text-white group">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:text-blue-400"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          <span class="font-medium">Dashboard</span>
+        </a>
+        <a href="/organizadoras" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-gray-400 hover:text-white group">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:text-blue-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="font-medium">Bancas</span>
+        </a>
+        <a href="/editais" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all text-gray-400 hover:text-white group">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:text-blue-400"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7 20 7"/></svg>
+          <span class="font-medium">Editais</span>
+        </a>
+      </nav>
+
+      <div class="p-4 border-t border-white/5">
+        <div class="flex items-center gap-3 px-2 py-2">
+          <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-xs">AB</div>
+          <div>
+            <p class="text-xs font-medium">Alexandre Bastos</p>
+            <p class="text-[10px] text-gray-500">Admin</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-64 p-8">
+      <header class="flex justify-between items-center mb-10">
+        <div>
+          <h2 class="text-2xl font-outfit font-bold">{title}</h2>
+          <p class="text-sm text-gray-500">Bem-vindo ao centro de controle do EditalHub.</p>
+        </div>
+        <div class="flex gap-4">
+          <button id="run-collector" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><polyline points="22 4 22 10 16 10"/></svg>
+            Verificar Editais
+          </button>
+        </div>
+      </header>
+
+      <slot />
+    </main>
+
+    <script>
+      const runBtn = document.getElementById('run-collector');
+      runBtn?.addEventListener('click', async () => {
+        runBtn.setAttribute('disabled', 'true');
+        runBtn.innerHTML = 'Processando...';
+        try {
+          const res = await fetch('/api/collect', { method: 'POST' });
+          const data = await res.json();
+          alert(data.message);
+        } catch (err) {
+          alert('Erro ao iniciar coleta');
+        } finally {
+          runBtn.removeAttribute('disabled');
+          runBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><polyline points="22 4 22 10 16 10"/></svg>
+            Verificar Editais
+          `;
+        }
+      });
+    </script>
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--accent: 136, 58, 234;
+		--accent-light: 224, 204, 250;
+		--accent-dark: 49, 10, 101;
+		--accent-gradient: linear-gradient(
+			45deg,
+			rgb(var(--accent)),
+			rgb(var(--accent-light)) 30%,
+			white 60%
+		);
+	}
+  
+  .font-outfit { font-family: 'Outfit', sans-serif; }
+  .font-inter { font-family: 'Inter', sans-serif; }
+
+  /* Glassmorphism scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+</style>

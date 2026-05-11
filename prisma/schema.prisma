@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Organizadora {
+  id           String   @id @default(uuid())
+  nome         String   @db.VarChar(255)
+  site_url     String   @db.VarChar(500)
+  ativo        Boolean  @default(true)
+  data_criacao DateTime @default(now())
+  editais      Edital[]
+
+  @@map("organizadora")
+}
+
+model Edital {
+  id                  String   @id @default(uuid())
+  organizadora_id     String
+  nome_edital         String   @db.VarChar(255)
+  url_edital          String   @db.VarChar(500)
+  nome_arquivo        String?  @db.VarChar(255)
+  hash_arquivo        String?  @db.VarChar(64)
+  data_download       DateTime?
+  status_processamento String   @default("pendente") @db.VarChar(50)
+  texto_extraido      String?  @db.NText
+  
+  organizadora        Organizadora @relation(fields: [organizadora_id], references: [id])
+  concursos           Concurso[]
+
+  @@map("edital")
+}
+
+model Concurso {
+  id                   String   @id @default(uuid())
+  edital_id            String
+  nome_concurso        String   @db.VarChar(255)
+  estado               String?  @db.VarChar(50)
+  escolaridade         String?  @db.VarChar(100)
+  formacao             String?  @db.VarChar(255)
+  profissao            String?  @db.VarChar(255)
+  registro_profissional String?  @db.VarChar(100)
+  salario_inicial      Decimal? @db.Decimal(18, 2)
+  idade_minima         Int?
+  idade_maxima         Int?
+  inscricao_inicio     DateTime?
+  inscricao_fim        DateTime?
+  link_inscricao       String?  @db.VarChar(500)
+
+  edital               Edital   @relation(fields: [edital_id], references: [id])
+
+  @@map("concurso")
+}

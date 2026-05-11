@@ -1,0 +1,80 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import prisma from '../lib/prisma';
+
+const totalOrganizadoras = await prisma.organizadora.count();
+const totalEditais = await prisma.edital.count();
+const editaisPendentes = await prisma.edital.count({ where: { status_processamento: 'pendente' } });
+const ultimosEditais = await prisma.edital.findMany({
+  take: 5,
+  orderBy: { data_download: 'desc' },
+  include: { organizadora: true }
+});
+---
+
+<DashboardLayout title="Geral">
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="glass-card p-6 flex flex-col gap-2">
+      <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Bancas Ativas</span>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-outfit font-bold">{totalOrganizadoras}</span>
+        <span class="text-xs text-green-400 font-medium">+1 este mês</span>
+      </div>
+    </div>
+    <div class="glass-card p-6 flex flex-col gap-2">
+      <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Editais Coletados</span>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-outfit font-bold">{totalEditais}</span>
+      </div>
+    </div>
+    <div class="glass-card p-6 flex flex-col gap-2">
+      <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Aguardando IA</span>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-outfit font-bold text-amber-400">{editaisPendentes}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card overflow-hidden">
+    <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+      <h3 class="font-outfit font-semibold">Últimos Editais Baixados</h3>
+      <a href="/editais" class="text-xs text-blue-400 hover:underline">Ver todos</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="text-xs text-gray-500 uppercase tracking-widest bg-white/[0.02]">
+            <th class="px-6 py-4 font-medium">Banca</th>
+            <th class="px-6 py-4 font-medium">Concurso</th>
+            <th class="px-6 py-4 font-medium">Data</th>
+            <th class="px-6 py-4 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          {ultimosEditais.map(edital => (
+            <tr class="hover:bg-white/[0.01] transition-colors">
+              <td class="px-6 py-4">
+                <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded uppercase">
+                  {edital.organizadora.nome}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <p class="text-sm font-medium truncate max-w-md">{edital.nome_edital}</p>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-400">
+                {edital.data_download ? new Date(edital.data_download).toLocaleDateString('pt-BR') : '-'}
+              </td>
+              <td class="px-6 py-4">
+                <span class={`px-2 py-1 text-[10px] font-bold rounded uppercase ${
+                  edital.status_processamento === 'pendente' ? 'bg-amber-500/10 text-amber-500' : 'bg-green-500/10 text-green-500'
+                }`}>
+                  {edital.status_processamento}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</DashboardLayout>

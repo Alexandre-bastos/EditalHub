@@ -1,0 +1,83 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import prisma from '../lib/prisma';
+
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const nome = formData.get('nome')?.toString();
+  const site_url = formData.get('site_url')?.toString();
+
+  if (nome && site_url) {
+    await prisma.organizadora.create({
+      data: { nome, site_url, ativo: true }
+    });
+  }
+}
+
+const organizadoras = await prisma.organizadora.findMany({
+  orderBy: { nome: 'asc' }
+});
+---
+
+<DashboardLayout title="Gestão de Bancas">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Listagem -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="glass-card overflow-hidden">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="text-xs text-gray-500 uppercase tracking-widest bg-white/[0.02]">
+              <th class="px-6 py-4 font-medium">Banca</th>
+              <th class="px-6 py-4 font-medium">Site Oficial</th>
+              <th class="px-6 py-4 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            {organizadoras.map(org => (
+              <tr class="hover:bg-white/[0.01] transition-colors">
+                <td class="px-6 py-4 font-semibold text-blue-400">{org.nome}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">
+                  <a href={org.site_url} target="_blank" class="hover:text-gray-300 truncate block max-w-xs">{org.site_url}</a>
+                </td>
+                <td class="px-6 py-4">
+                  <span class={`w-2 h-2 rounded-full inline-block ${org.ativo ? 'bg-green-500' : 'bg-red-500'} shadow-[0_0_8px_rgba(34,197,94,0.5)]`}></span>
+                  <span class="ml-2 text-xs font-medium">{org.ativo ? 'Ativa' : 'Inativa'}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cadastro -->
+    <div class="space-y-6">
+      <div class="glass-card p-6">
+        <h3 class="font-outfit font-semibold mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="16" x2="22" y1="11" y2="11"/></svg>
+          Nova Banca
+        </h3>
+        <form method="POST" class="space-y-4">
+          <div>
+            <label class="block text-xs text-gray-500 uppercase tracking-widest mb-1.5 font-semibold">Nome da Banca</label>
+            <input name="nome" type="text" placeholder="Ex: FGV, Cebraspe" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all" required />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 uppercase tracking-widest mb-1.5 font-semibold">URL Base de Concursos</label>
+            <input name="site_url" type="url" placeholder="https://..." class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all" required />
+          </div>
+          <button type="submit" class="btn-primary w-full mt-2">Cadastrar Banca</button>
+        </form>
+      </div>
+      
+      <div class="glass-card p-6 bg-gradient-to-br from-indigo-500/10 to-blue-500/10 border-indigo-500/20">
+        <h4 class="text-sm font-semibold mb-2">Dica de Automação</h4>
+        <p class="text-xs text-gray-400 leading-relaxed">
+          Ao cadastrar uma nova banca, o sistema tentará mapear os seletores CSS automaticamente se seguir o padrão das bancas já suportadas.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</DashboardLayout>
