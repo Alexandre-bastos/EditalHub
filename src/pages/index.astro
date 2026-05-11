@@ -18,7 +18,7 @@ try {
   ultimosEditais = await prisma.edital.findMany({
     take: 5,
     orderBy: { data_download: 'desc' },
-    include: { organizadora: true }
+    include: { organizadora: true, concursos: true }
   });
   console.log('Dados carregados com sucesso');
 } catch (err) {
@@ -82,7 +82,13 @@ try {
                 </span>
               </td>
               <td class="px-6 py-4">
-                <p class="text-sm font-medium truncate max-w-md">{edital.nome_edital}</p>
+                {edital.status_processamento === 'processado' ? (
+                  <a href={`/concursos/${edital.concursos[0]?.id}`} class="text-sm font-medium hover:text-blue-400 transition-colors truncate max-w-md block">
+                    {edital.nome_edital}
+                  </a>
+                ) : (
+                  <p class="text-sm font-medium truncate max-w-md">{edital.nome_edital}</p>
+                )}
               </td>
               <td class="px-6 py-4 text-sm text-gray-400">
                 {edital.data_download ? new Date(edital.data_download).toLocaleDateString('pt-BR') : '-'}

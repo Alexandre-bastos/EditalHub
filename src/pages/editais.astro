@@ -56,6 +56,14 @@ const editais = await prisma.edital.findMany({
               </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-4">
+                  {edital.status_processamento === 'processado' && edital.concursos.length > 0 && (
+                    <a 
+                      href={`/concursos/${edital.concursos[0].id}`}
+                      class="text-[10px] bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-all"
+                    >
+                      Gerenciar
+                    </a>
+                  )}
                   {edital.nome_arquivo && edital.status_processamento === 'pendente' && (
                     <button 
                       class="process-btn text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-all"
