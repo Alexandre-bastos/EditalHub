@@ -16,6 +16,7 @@
   "dependencies": {
     "@astrojs/node": "^10.1.0",
     "@astrojs/react": "^5.0.4",
+    "@astrojs/vercel": "^10.0.6",
     "@azure/storage-blob": "^12.31.0",
     "@prisma/client": "^5.22.0",
     "@tailwindcss/vite": "^4.3.0",
