@@ -1,0 +1,115 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import prisma from '../../lib/prisma';
+import { azureStorage } from '../../services/azureStorage';
+
+const organizadoras = await prisma.organizadora.findMany({ where: { ativo: true } });
+let error = '';
+let success = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const organizadora_id = formData.get('organizadora_id')?.toString();
+    const nome_edital = formData.get('nome_edital')?.toString();
+    const url_edital = formData.get('url_edital')?.toString();
+    const file = formData.get('edital_pdf') as File;
+
+    if (!organizadora_id || !nome_edital || !url_edital) {
+      throw new Error('Preencha todos os campos obrigatórios');
+    }
+
+    const org = organizadoras.find(o => o.id === organizadora_id);
+    if (!org) throw new Error('Banca não encontrada');
+
+    // 1. Criar registro do edital
+    const edital = await prisma.edital.create({
+      data: {
+        organizadora_id,
+        nome_edital,
+        url_edital,
+        status_processamento: 'pendente',
+        is_valido: true
+      }
+    });
+
+    // 2. Upload do arquivo se houver
+    if (file && file.size > 0) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const blobName = `${org.nome.replace(/\s+/g, '_')}/${new Date().getFullYear()}/${edital.id}.pdf`;
+      await azureStorage.uploadBuffer(buffer, blobName);
+
+      await prisma.edital.update({
+        where: { id: edital.id },
+        data: {
+          nome_arquivo: blobName,
+          data_download: new Date()
+        }
+      });
+    }
+
+    success = 'Edital cadastrado com sucesso!';
+    return Astro.redirect('/editais');
+
+  } catch (e: any) {
+    error = e.message;
+  }
+}
+---
+
+<DashboardLayout title="Cadastro Manual de Edital">
+  <div class="max-w-2xl mx-auto">
+    <div class="glass-card p-8">
+      <h3 class="text-xl font-outfit font-semibold mb-6 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7 20 7"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="9" x2="15" y1="15" y2="15"/></svg>
+        Entrada Manual de Edital
+      </h3>
+
+      {error && <p class="bg-red-500/10 border border-red-500/50 text-red-500 p-4 rounded-xl text-sm mb-6">{error}</p>}
+      {success && <p class="bg-green-500/10 border border-green-500/50 text-green-500 p-4 rounded-xl text-sm mb-6">{success}</p>}
+
+      <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        <div>
+          <label class="block text-xs text-gray-500 uppercase tracking-widest mb-2 font-bold">Organizadora / Banca</label>
+          <select name="organizadora_id" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none appearance-none" required>
+            <option value="">Selecione a banca...</option>
+            {organizadoras.map(o => <option value={o.id}>{o.nome}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-500 uppercase tracking-widest mb-2 font-bold">Nome do Concurso / Órgão</label>
+          <input name="nome_edital" type="text" placeholder="Ex: Tribunal de Justiça de São Paulo" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" required />
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-500 uppercase tracking-widest mb-2 font-bold">URL do Edital no Site da Banca</label>
+          <input name="url_edital" type="url" placeholder="https://..." class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" required />
+        </div>
+
+        <div class="p-6 border-2 border-dashed border-white/10 rounded-2xl bg-white/[0.01] hover:bg-white/[0.03] transition-all group">
+          <label class="cursor-pointer flex flex-col items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 group-hover:text-blue-400 transition-colors"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            <span class="text-xs font-medium text-gray-400">Upload do PDF do Edital (Opcional)</span>
+            <input name="edital_pdf" type="file" accept="application/pdf" class="hidden" id="file-input" />
+            <span id="file-name" class="text-[10px] text-blue-400 font-bold mt-1"></span>
+          </label>
+        </div>
+
+        <div class="flex gap-4 pt-4">
+          <button type="submit" class="btn-primary flex-1">Salvar Edital</button>
+          <a href="/editais" class="px-6 py-3 rounded-xl border border-white/10 text-sm font-medium hover:bg-white/5 transition-all">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const fileName = document.getElementById('file-name');
+    fileInput?.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file && fileName) fileName.textContent = file.name;
+    });
+  </script>
+</DashboardLayout>

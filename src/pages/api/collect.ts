@@ -1,14 +1,12 @@
 import type { APIRoute } from 'astro';
-import { scrapeFgv } from '../../services/collector';
+import { scrapeAll } from '../../services/collector';
 
 export const POST: APIRoute = async () => {
   try {
-    // Iniciamos o processo de forma assíncrona para não travar a requisição
-    // Mas no MVP vamos aguardar para dar o feedback imediato
-    await scrapeFgv();
+    await scrapeAll();
     
     return new Response(JSON.stringify({
-      message: 'Coleta finalizada com sucesso!'
+      message: 'Coleta multi-banca finalizada com sucesso!'
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

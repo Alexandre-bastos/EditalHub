@@ -4,7 +4,7 @@ import prisma from '../lib/prisma';
 
 const editais = await prisma.edital.findMany({
   where: { 
-    is_valido: true // FILTRO: Apenas editais válidos (concursos abertos)
+    is_valido: true
   },
   orderBy: { data_download: 'desc' },
   include: { 
@@ -15,11 +15,28 @@ const editais = await prisma.edital.findMany({
 ---
 
 <DashboardLayout title="Monitoramento de Editais">
+  <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-outfit font-bold text-gray-100">Repositório de Editais</h2>
+      <p class="text-sm text-gray-500">Gerencie a coleta automatizada e as entradas manuais</p>
+    </div>
+    <div class="flex gap-3">
+      <a href="/editais/novo" class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        Cadastrar Manualmente
+      </a>
+      <button id="sync-btn" class="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-bold rounded-xl transition-all border border-white/10">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+        Sincronizar Bancas
+      </button>
+    </div>
+  </div>
+
   <div class="glass-card overflow-hidden">
     <div class="px-6 py-4 border-b border-white/5 bg-white/[0.01]">
       <div class="flex justify-between items-center">
-        <h3 class="font-outfit font-semibold text-sm uppercase tracking-widest text-gray-400">Repositório de Editais Vigentes</h3>
-        <span class="text-xs text-gray-500">{editais.length} editais ativos</span>
+        <h3 class="font-outfit font-semibold text-xs uppercase tracking-widest text-gray-500">Editais Vigentes</h3>
+        <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">{editais.length} ativos</span>
       </div>
     </div>
     <div class="overflow-x-auto">
@@ -68,33 +85,19 @@ const editais = await prisma.edital.findMany({
                       {edital.status_processamento}
                     </span>
                   </div>
-                  {edital.status_processamento === 'erro' && edital.erro_mensagem && (
-                    <div class="flex items-center gap-1.5 group/err">
-                      <p class="text-[9px] text-red-400/60 italic truncate max-w-[120px]" title={edital.erro_mensagem}>
-                        {edital.erro_mensagem}
-                      </p>
-                      <button 
-                        class="copy-error-btn p-1 bg-red-500/5 hover:bg-red-500/20 rounded-md transition-all text-red-400/50 hover:text-red-400"
-                        data-error={edital.erro_mensagem}
-                        title="Copiar erro completo"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                      </button>
-                    </div>
-                  )}
                 </div>
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
-                  {edital.status_processamento === 'processado' && edital.concursos.length > 0 && (
-                    <a 
-                      href={`/concursos/${edital.concursos[0].id}`}
-                      class="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg transition-all"
-                      title="Ver Dados Extraídos"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </a>
-                  )}
+                  <!-- Link para Gestão de Dados (Manual ou Extraído) -->
+                  <a 
+                    href={edital.concursos.length > 0 ? `/concursos/${edital.concursos[0].id}` : `/concursos/manual?edital=${edital.id}`}
+                    class="p-2 bg-blue-500/10 hover:bg-blue-400 text-blue-400 hover:text-white rounded-lg transition-all border border-blue-500/10"
+                    title="Gerenciar Dados e Cargos"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/><path d="M8 6h5"/><path d="M8 10h9"/><path d="M8 14h5"/><path d="M8 18h9"/></svg>
+                  </a>
+
                   {edital.nome_arquivo && (edital.status_processamento === 'pendente' || edital.status_processamento === 'erro') && (
                     <button 
                       class="process-btn p-2 bg-indigo-600/10 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-lg transition-all border border-indigo-600/20"
@@ -109,7 +112,7 @@ const editais = await prisma.edital.findMany({
                       href={`https://storageappvidanavida.blob.core.windows.net/editalhub/${edital.nome_arquivo}`} 
                       target="_blank"
                       class="p-2 bg-white/5 hover:bg-red-500/10 rounded-lg text-gray-500 hover:text-red-400 transition-all"
-                      title="Abrir PDF Original"
+                      title="Abrir PDF"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7 20 7"/></svg>
                     </a>
@@ -124,20 +127,6 @@ const editais = await prisma.edital.findMany({
   </div>
 
   <script>
-    // Gerenciamento de Cópia de Erro
-    document.querySelectorAll('.copy-error-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const error = btn.getAttribute('data-error');
-        if (error) {
-          navigator.clipboard.writeText(error);
-          const icon = btn.innerHTML;
-          btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-          setTimeout(() => btn.innerHTML = icon, 2000);
-        }
-      });
-    });
-
     const processBtns = document.querySelectorAll('.process-btn');
     processBtns.forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -151,9 +140,8 @@ const editais = await prisma.edital.findMany({
             body: JSON.stringify({ editalId }),
             headers: { 'Content-Type': 'application/json' }
           });
-          if (res.ok) {
-            window.location.reload();
-          } else {
+          if (res.ok) window.location.reload();
+          else {
             const data = await res.json();
             alert('Falha: ' + (data.error || 'Erro desconhecido'));
             btn.removeAttribute('disabled');
@@ -165,6 +153,22 @@ const editais = await prisma.edital.findMany({
           btn.classList.remove('animate-pulse');
         }
       });
+    });
+
+    const syncBtn = document.getElementById('sync-btn');
+    syncBtn?.addEventListener('click', async () => {
+      syncBtn.setAttribute('disabled', 'true');
+      syncBtn.classList.add('animate-spin');
+      try {
+        const res = await fetch('/api/collect', { method: 'POST' });
+        if (res.ok) window.location.reload();
+        else alert('Erro ao sincronizar');
+      } catch (err) {
+        alert('Erro na rede');
+      } finally {
+        syncBtn.removeAttribute('disabled');
+        syncBtn.classList.remove('animate-spin');
+      }
     });
   </script>
 </DashboardLayout>

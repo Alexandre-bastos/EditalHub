@@ -1,8 +1,8 @@
-import { scrapeFgv } from './src/services/collector';
+import { scrapeAll } from './src/services/collector';
 
 async function run() {
   try {
-    await scrapeFgv();
+    await scrapeAll();
     console.log('Execução finalizada com sucesso.');
     process.exit(0);
   } catch (err) {

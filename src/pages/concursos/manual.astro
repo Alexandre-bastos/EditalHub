@@ -1,0 +1,34 @@
+---
+import prisma from '../../lib/prisma';
+
+const editalId = Astro.url.searchParams.get('edital');
+
+if (!editalId) {
+  return Astro.redirect('/editais');
+}
+
+// Verificar se já existe um concurso para este edital
+let concurso = await prisma.concurso.findFirst({
+  where: { edital_id: editalId }
+});
+
+if (!concurso) {
+  // Criar o registro em branco para o modo manual
+  const edital = await prisma.edital.findUnique({ where: { id: editalId } });
+  
+  concurso = await prisma.concurso.create({
+    data: {
+      edital_id: editalId,
+      nome_concurso: edital?.nome_edital || 'Novo Concurso',
+    }
+  });
+
+  // Marcar edital como processado (manualmente)
+  await prisma.edital.update({
+    where: { id: editalId },
+    data: { status_processamento: 'processado' }
+  });
+}
+
+return Astro.redirect(`/concursos/${concurso.id}`);
+---
