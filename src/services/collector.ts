@@ -9,13 +9,18 @@ const EXCLUDE_KEYWORDS = [
   'resultado definitivo',
   'homologação',
   'classificação final',
-  'convocação para posse',
+  'convocação',
+  'posse',
   'encerramento',
-  'resultado da prova'
+  'resultado da prova',
+  'gabarito',
+  'cronograma',
+  'aviso',
+  'comunicado'
 ];
 
 export async function scrapeFgv() {
-  console.log('--- Iniciando Coleta FGV (Filtro: Vigentes) ---');
+  console.log('--- Iniciando Coleta FGV (Filtro Inteligente) ---');
   const startTime = new Date();
   
   const browser = await chromium.launch({ headless: true });
@@ -51,75 +56,65 @@ export async function scrapeFgv() {
       }
     });
 
-    console.log(`Total de concursos encontrados na página: ${concursos.length}`);
+    console.log(`Total de concursos encontrados: ${concursos.length}`);
 
     for (const concurso of concursos) {
       console.log(`\n[${new Date().toLocaleTimeString()}] Analisando: ${concurso.nome}`);
       
       try {
+        const alreadyHasEdital = await prisma.edital.findFirst({
+          where: { nome_edital: concurso.nome }
+        });
+
+        if (alreadyHasEdital) {
+          console.log(`  > Concurso já processado. Pulando...`);
+          continue;
+        }
+
         await page.goto(concurso.link, { waitUntil: 'networkidle', timeout: 30000 });
         const concContent = await page.content();
         const $c = cheerio.load(concContent);
         
-        // 1. Verificar se é "Vigente" (possui link de inscrição ou não tem keywords de encerramento no topo)
-        const hasRegistrationLink = $c('a').filter((i, el) => {
-          const text = $c(el).text().toLowerCase();
-          return text.includes('inscrição') || text.includes('inscreva-se');
-        }).length > 0;
+        // Determinar se o edital é válido (abertura/vigente) ou apenas informativo
+        const nomeLower = concurso.nome.toLowerCase();
+        let isValid = !EXCLUDE_KEYWORDS.some(k => nomeLower.includes(k));
 
-        // Verificar os primeiros 5 links/títulos para keywords de encerramento
-        let isFinished = false;
-        $c('a, .views-field-title').slice(0, 10).each((i, el) => {
+        const editalLinkEl = $c('a').filter((i, el) => {
           const text = $c(el).text().toLowerCase();
-          if (EXCLUDE_KEYWORDS.some(k => text.includes(k))) {
-            isFinished = true;
-            return false; // break
+          const isEdital = text.includes('edital');
+          const isAbertura = text.includes('abertura') || text.includes('retificado');
+          const isExcluded = EXCLUDE_KEYWORDS.some(k => text.includes(k) && k !== 'retificado');
+          
+          return isEdital && isAbertura && !isExcluded;
+        }).first();
+
+        const editalUrl = editalLinkEl.length > 0 ? 
+          (editalLinkEl.attr('href')?.startsWith('http') ? editalLinkEl.attr('href') : 'https://conhecimento.fgv.br' + (editalLinkEl.attr('href')?.startsWith('/') ? '' : '/') + editalLinkEl.attr('href')) : 
+          null;
+
+        if (!editalUrl) {
+          isValid = false;
+        }
+
+        // Mesmo se for inválido, salvamos no banco para não processar de novo, mas marcamos como is_valido: false
+        const edital = await prisma.edital.create({
+          data: {
+            organizadora_id: fgv.id,
+            nome_edital: concurso.nome,
+            url_edital: editalUrl || concurso.link,
+            status_processamento: isValid ? 'pendente' : 'ignorado',
+            is_valido: isValid
           }
         });
 
-        if (isFinished && !hasRegistrationLink) {
-          console.log(`  > STATUS: Ignorado (Concurso encerrado ou apenas resultados)`);
-          continue;
-        }
-
-        if (!hasRegistrationLink && !isFinished) {
-          // Pode ser um concurso novo que ainda não abriu ou que não tem link fácil
-          // Vamos checar se tem o edital de abertura pelo menos
-        }
-
-        // 2. Procurar Edital de Abertura
-        const editalLinkEl = $c('a').filter((i, el) => {
-          const text = $c(el).text().toLowerCase();
-          return text.includes('edital') && (text.includes('abertura') || text.includes('retificado'));
-        }).first();
-
-        if (editalLinkEl.length > 0) {
-          let href = editalLinkEl.attr('href') || '';
-          const editalUrl = href.startsWith('http') ? href : 'https://conhecimento.fgv.br' + (href.startsWith('/') ? '' : '/') + href;
-          
-          const existing = await prisma.edital.findFirst({
-            where: { url_edital: editalUrl }
-          });
-
-          if (!existing) {
-            const edital = await prisma.edital.create({
-              data: {
-                organizadora_id: fgv.id,
-                nome_edital: concurso.nome,
-                url_edital: editalUrl,
-                status_processamento: 'pendente'
-              }
-            });
-            
-            console.log(`  > NOVO EDITAL VIGENTE: ${edital.nome_edital}`);
-            await uploadEditalToAzure(editalUrl, fgv.nome, edital.id);
-          } else {
-            console.log('  > Edital já cadastrado.');
-          }
+        if (isValid && editalUrl) {
+          console.log(`  > NOVO EDITAL VÁLIDO: ${edital.nome_edital}`);
+          await uploadEditalToAzure(editalUrl, fgv.nome, edital.id);
         } else {
-          console.log('  > Nenhum link de edital de abertura encontrado.');
+          console.log(`  > STATUS: Ignorado (Informativo ou Edital não encontrado)`);
         }
-      } catch (err) {
+
+      } catch (err: any) {
         console.error(`  > Erro ao processar concurso ${concurso.nome}:`, err.message);
       }
     }
@@ -135,7 +130,6 @@ export async function scrapeFgv() {
 
 async function uploadEditalToAzure(url: string, org: string, editalId: string) {
   try {
-    console.log(`  > Baixando PDF: ${url}`);
     const response = await axios({
       url,
       method: 'GET',
@@ -147,8 +141,7 @@ async function uploadEditalToAzure(url: string, org: string, editalId: string) {
     const year = new Date().getFullYear().toString();
     const blobName = `${org}/${year}/${editalId}.pdf`;
 
-    console.log(`  > Fazendo upload para Azure Storage...`);
-    const blobUrl = await azureStorage.uploadBuffer(buffer, blobName);
+    await azureStorage.uploadBuffer(buffer, blobName);
 
     await prisma.edital.update({
       where: { id: editalId },
@@ -158,9 +151,8 @@ async function uploadEditalToAzure(url: string, org: string, editalId: string) {
       }
     });
 
-    console.log(`  > Upload concluído: ${blobName}`);
-    return blobUrl;
-  } catch (error) {
-    console.error(`  > Erro no download/upload do edital ${url}:`, error.message);
+    return blobName;
+  } catch (error: any) {
+    console.error(`  > Erro no upload do edital ${url}:`, error.message);
   }
 }

@@ -9,18 +9,21 @@ let ultimosEditais = [];
 let errorMsg = null;
 
 try {
-  console.log('--- Debug Dashboard ---');
-  console.log('DATABASE_URL presente:', !!process.env.DATABASE_URL);
+  totalOrganizadoras = await prisma.organizadora.count({ where: { ativo: true } });
+  totalEditais = await prisma.edital.count({ where: { is_valido: true } });
+  editaisPendentes = await prisma.edital.count({ 
+    where: { 
+      status_processamento: 'pendente',
+      is_valido: true 
+    } 
+  });
   
-  totalOrganizadoras = await prisma.organizadora.count();
-  totalEditais = await prisma.edital.count();
-  editaisPendentes = await prisma.edital.count({ where: { status_processamento: 'pendente' } });
   ultimosEditais = await prisma.edital.findMany({
+    where: { is_valido: true },
     take: 5,
     orderBy: { data_download: 'desc' },
     include: { organizadora: true, concursos: true }
   });
-  console.log('Dados carregados com sucesso');
 } catch (err) {
   console.error('Erro ao carregar Dashboard:', err);
   errorMsg = err instanceof Error ? err.message : String(err);
@@ -32,7 +35,6 @@ try {
     <div class="glass-card p-6 border-red-500/50 bg-red-500/10 mb-8">
       <h3 class="text-red-500 font-bold mb-2">Erro de Conexão com o Banco</h3>
       <p class="text-sm text-gray-400 font-mono">{errorMsg}</p>
-      <p class="text-xs text-gray-500 mt-4 italic">Verifique os logs na Vercel para mais detalhes.</p>
     </div>
   )}
 
@@ -41,16 +43,15 @@ try {
       <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Bancas Ativas</span>
       <div class="flex items-baseline gap-2">
         <span class="text-4xl font-outfit font-bold">{totalOrganizadoras}</span>
-        <span class="text-xs text-green-400 font-medium">+1 este mês</span>
       </div>
     </div>
     <div class="glass-card p-6 flex flex-col gap-2">
-      <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Editais Coletados</span>
+      <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Editais Válidos</span>
       <div class="flex items-baseline gap-2">
         <span class="text-4xl font-outfit font-bold">{totalEditais}</span>
       </div>
     </div>
-    <div class="glass-card p-6 flex flex-col gap-2">
+    <div class="glass-card p-6 flex flex-col gap-2 border-amber-500/20">
       <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Aguardando IA</span>
       <div class="flex items-baseline gap-2">
         <span class="text-4xl font-outfit font-bold text-amber-400">{editaisPendentes}</span>
@@ -59,25 +60,25 @@ try {
   </div>
 
   <div class="glass-card overflow-hidden">
-    <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
-      <h3 class="font-outfit font-semibold">Últimos Editais Baixados</h3>
-      <a href="/editais" class="text-xs text-blue-400 hover:underline">Ver todos</a>
+    <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+      <h3 class="font-outfit font-semibold text-sm">Últimos Editais Coletados</h3>
+      <a href="/editais" class="text-[10px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider">Ver todos</a>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-left">
         <thead>
-          <tr class="text-xs text-gray-500 uppercase tracking-widest bg-white/[0.02]">
+          <tr class="text-[10px] text-gray-500 uppercase tracking-widest bg-white/[0.02]">
             <th class="px-6 py-4 font-medium">Banca</th>
-            <th class="px-6 py-4 font-medium">Concurso</th>
-            <th class="px-6 py-4 font-medium">Data</th>
+            <th class="px-6 py-4 font-medium">Concurso / Órgão</th>
+            <th class="px-6 py-4 font-medium">Data Coleta</th>
             <th class="px-6 py-4 font-medium">Status</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-white/5">
           {ultimosEditais.map(edital => (
-            <tr class="hover:bg-white/[0.01] transition-colors">
+            <tr class="hover:bg-white/[0.01] transition-colors group">
               <td class="px-6 py-4">
-                <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded uppercase">
+                <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[9px] font-bold rounded uppercase border border-blue-500/20">
                   {edital.organizadora.nome}
                 </span>
               </td>
@@ -90,15 +91,20 @@ try {
                   <p class="text-sm font-medium truncate max-w-md">{edital.nome_edital}</p>
                 )}
               </td>
-              <td class="px-6 py-4 text-sm text-gray-400">
+              <td class="px-6 py-4 text-xs text-gray-400 font-mono">
                 {edital.data_download ? new Date(edital.data_download).toLocaleDateString('pt-BR') : '-'}
               </td>
               <td class="px-6 py-4">
-                <span class={`px-2 py-1 text-[10px] font-bold rounded uppercase ${
-                  edital.status_processamento === 'pendente' ? 'bg-amber-500/10 text-amber-500' : 'bg-green-500/10 text-green-500'
-                }`}>
-                  {edital.status_processamento}
-                </span>
+                <div class="flex items-center gap-2">
+                   <span class={`w-1 h-1 rounded-full ${
+                    edital.status_processamento === 'pendente' ? 'bg-amber-500' : 'bg-green-500'
+                  }`}></span>
+                  <span class={`text-[9px] font-bold rounded uppercase ${
+                    edital.status_processamento === 'pendente' ? 'text-amber-500' : 'text-green-500'
+                  }`}>
+                    {edital.status_processamento}
+                  </span>
+                </div>
               </td>
             </tr>
           ))}

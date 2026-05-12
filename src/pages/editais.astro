@@ -3,6 +3,9 @@ import DashboardLayout from '../layouts/DashboardLayout.astro';
 import prisma from '../lib/prisma';
 
 const editais = await prisma.edital.findMany({
+  where: { 
+    is_valido: true // FILTRO: Apenas editais válidos (concursos abertos)
+  },
   orderBy: { data_download: 'desc' },
   include: { 
     organizadora: true,
@@ -15,19 +18,19 @@ const editais = await prisma.edital.findMany({
   <div class="glass-card overflow-hidden">
     <div class="px-6 py-4 border-b border-white/5 bg-white/[0.01]">
       <div class="flex justify-between items-center">
-        <h3 class="font-outfit font-semibold">Repositório de Arquivos</h3>
-        <span class="text-xs text-gray-500">{editais.length} arquivos totais</span>
+        <h3 class="font-outfit font-semibold text-sm uppercase tracking-widest text-gray-400">Repositório de Editais Vigentes</h3>
+        <span class="text-xs text-gray-500">{editais.length} editais ativos</span>
       </div>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full text-left">
         <thead>
-          <tr class="text-xs text-gray-500 uppercase tracking-widest bg-white/[0.02]">
-            <th class="px-6 py-4 font-medium">Concurso</th>
+          <tr class="text-[10px] text-gray-500 uppercase tracking-widest bg-white/[0.02]">
+            <th class="px-6 py-4 font-medium">Concurso / Órgão</th>
             <th class="px-6 py-4 font-medium">Banca</th>
             <th class="px-6 py-4 font-medium">Data Coleta</th>
-            <th class="px-6 py-4 font-medium">Status</th>
-            <th class="px-6 py-4 font-medium">Ações</th>
+            <th class="px-6 py-4 font-medium">Status IA</th>
+            <th class="px-6 py-4 font-medium text-right">Ações</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-white/5">
@@ -37,25 +40,27 @@ const editais = await prisma.edital.findMany({
                 <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition-colors">
                   {edital.concursos[0]?.nome_concurso || edital.nome_edital}
                 </p>
-                <p class="text-[10px] text-gray-500 mt-0.5 truncate max-w-xs">{edital.url_edital}</p>
+                <div class="flex items-center gap-2 mt-1">
+                   <p class="text-[10px] text-gray-500 truncate max-w-[250px]" title={edital.url_edital}>{edital.url_edital}</p>
+                </div>
               </td>
               <td class="px-6 py-4">
-                <span class="px-2 py-1 bg-white/5 text-gray-400 text-[10px] font-bold rounded uppercase">
+                <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[9px] font-bold rounded-full border border-blue-500/20">
                   {edital.organizadora.nome}
                 </span>
               </td>
-              <td class="px-6 py-4 text-sm text-gray-400">
+              <td class="px-6 py-4 text-[11px] text-gray-400 font-mono">
                 {edital.data_download ? new Date(edital.data_download).toLocaleString('pt-BR') : '-'}
               </td>
               <td class="px-6 py-4">
                 <div class="flex flex-col gap-1">
                   <div class="flex items-center gap-2">
                     <span class={`w-1.5 h-1.5 rounded-full ${
-                      edital.status_processamento === 'pendente' ? 'bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 
-                      edital.status_processamento === 'erro' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' :
-                      'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]'
+                      edital.status_processamento === 'pendente' ? 'bg-amber-500 animate-pulse' : 
+                      edital.status_processamento === 'erro' ? 'bg-red-500' :
+                      'bg-green-500'
                     }`}></span>
-                    <span class={`text-[10px] font-bold uppercase ${
+                    <span class={`text-[9px] font-bold uppercase tracking-tight ${
                       edital.status_processamento === 'pendente' ? 'text-amber-500' : 
                       edital.status_processamento === 'erro' ? 'text-red-500' :
                       'text-green-500'
@@ -64,36 +69,47 @@ const editais = await prisma.edital.findMany({
                     </span>
                   </div>
                   {edital.status_processamento === 'erro' && edital.erro_mensagem && (
-                    <p class="text-[9px] text-red-400/70 italic max-w-[150px] truncate" title={edital.erro_mensagem}>
-                      {edital.erro_mensagem}
-                    </p>
+                    <div class="flex items-center gap-1.5 group/err">
+                      <p class="text-[9px] text-red-400/60 italic truncate max-w-[120px]" title={edital.erro_mensagem}>
+                        {edital.erro_mensagem}
+                      </p>
+                      <button 
+                        class="copy-error-btn p-1 bg-red-500/5 hover:bg-red-500/20 rounded-md transition-all text-red-400/50 hover:text-red-400"
+                        data-error={edital.erro_mensagem}
+                        title="Copiar erro completo"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                      </button>
+                    </div>
                   )}
                 </div>
               </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
                   {edital.status_processamento === 'processado' && edital.concursos.length > 0 && (
                     <a 
                       href={`/concursos/${edital.concursos[0].id}`}
-                      class="text-[10px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg transition-all font-bold"
+                      class="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg transition-all"
+                      title="Ver Dados Extraídos"
                     >
-                      ABRIR DETALHES
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                     </a>
                   )}
                   {edital.nome_arquivo && (edital.status_processamento === 'pendente' || edital.status_processamento === 'erro') && (
                     <button 
-                      class="process-btn text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-all font-bold active:scale-95"
+                      class="process-btn p-2 bg-indigo-600/10 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-lg transition-all border border-indigo-600/20"
                       data-id={edital.id}
+                      title={edital.status_processamento === 'erro' ? 'Reprocessar' : 'Processar com IA'}
                     >
-                      {edital.status_processamento === 'erro' ? 'REPROCESSAR' : 'PROCESSAR IA'}
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
                     </button>
                   )}
                   {edital.nome_arquivo && (
                     <a 
                       href={`https://storageappvidanavida.blob.core.windows.net/editalhub/${edital.nome_arquivo}`} 
                       target="_blank"
-                      class="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-red-400 transition-all"
-                      title="Ver PDF"
+                      class="p-2 bg-white/5 hover:bg-red-500/10 rounded-lg text-gray-500 hover:text-red-400 transition-all"
+                      title="Abrir PDF Original"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7 20 7"/></svg>
                     </a>
@@ -108,13 +124,26 @@ const editais = await prisma.edital.findMany({
   </div>
 
   <script>
+    // Gerenciamento de Cópia de Erro
+    document.querySelectorAll('.copy-error-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const error = btn.getAttribute('data-error');
+        if (error) {
+          navigator.clipboard.writeText(error);
+          const icon = btn.innerHTML;
+          btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+          setTimeout(() => btn.innerHTML = icon, 2000);
+        }
+      });
+    });
+
     const processBtns = document.querySelectorAll('.process-btn');
     processBtns.forEach(btn => {
       btn.addEventListener('click', async () => {
         const editalId = btn.getAttribute('data-id');
         btn.setAttribute('disabled', 'true');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = 'ANALISANDO...';
+        btn.classList.add('animate-pulse');
         
         try {
           const res = await fetch('/api/process', {
@@ -122,18 +151,18 @@ const editais = await prisma.edital.findMany({
             body: JSON.stringify({ editalId }),
             headers: { 'Content-Type': 'application/json' }
           });
-          const data = await res.json();
           if (res.ok) {
             window.location.reload();
           } else {
-            alert('Erro: ' + (data.error || data.message));
+            const data = await res.json();
+            alert('Falha: ' + (data.error || 'Erro desconhecido'));
             btn.removeAttribute('disabled');
-            btn.innerHTML = originalText;
+            btn.classList.remove('animate-pulse');
           }
         } catch (err) {
-          alert('Erro na comunicação com o servidor');
+          alert('Erro na rede');
           btn.removeAttribute('disabled');
-          btn.innerHTML = originalText;
+          btn.classList.remove('animate-pulse');
         }
       });
     });

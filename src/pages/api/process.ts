@@ -8,13 +8,12 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       body = await request.json();
     } catch (e) {
-      // Ignora se não houver body (processamento em lote)
+      // Ignora se não houver body
     }
 
     const { editalId } = body;
 
     if (editalId) {
-      // Processamento individual
       await processEdital(editalId);
       return new Response(JSON.stringify({ message: 'Edital processado com sucesso!' }), {
         status: 200,
@@ -42,6 +41,11 @@ export const POST: APIRoute = async ({ request }) => {
       try {
         await processEdital(edital.id);
         results.push({ id: edital.id, success: true });
+        
+        // Delay de 2 segundos entre chamadas para evitar 429 (Quota do Gemini)
+        if (editais.length > 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
       } catch (err) {
         results.push({ id: edital.id, success: false, error: err instanceof Error ? err.message : String(err) });
       }
