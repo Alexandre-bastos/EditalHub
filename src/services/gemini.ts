@@ -33,17 +33,19 @@ export class GeminiService {
       2. Estado (UF).
       3. Escolaridade predominante (Fundamental, Médio, Técnico ou Superior).
       4. Valor da taxa de inscrição (se houver múltiplos, use o da escolaridade superior).
-      5. Datas: Início das inscrições, Fim das inscrições e Data da prova.
-      6. Formação/Profissão: Se o edital for para uma área específica (ex: Saúde, Jurídico), identifique. Caso contrário, use "Diversas".
-      7. Idade Mínima/Máxima: Identifique se houver limites de idade (comum em carreiras policiais).
-      8. Link de Inscrição: Procure pelo link do portal do candidato no site da banca.
-      9. Lista de Cargos (Vagas): Nome do cargo, Escolaridade exigida, Salário, Quantidade de vagas e Requisitos.
+      5. Salário Inicial: Identifique o menor salário oferecido entre todos os cargos (ou o salário base).
+      6. Datas: Início das inscrições, Fim das inscrições e Data da prova.
+      7. Formação/Profissão: Se o edital for para uma área específica (ex: Saúde, Jurídico), identifique. Caso contrário, use "Diversas".
+      8. Idade Mínima/Máxima: Identifique se houver limites de idade (comum em carreiras policiais).
+      9. Link de Inscrição: Procure pelo link do portal do candidato no site da banca.
+      10. Lista de Cargos (Vagas): Nome do cargo, Escolaridade exigida, Salário, Quantidade de vagas e Requisitos.
 
       O formato de resposta DEVE ser EXATAMENTE este JSON:
       {
         "nome_concurso": "string",
         "estado": "string",
         "escolaridade": "string",
+        "salario_inicial": number,
         "formacao": "string",
         "profissao": "string",
         "taxa_inscricao": number,

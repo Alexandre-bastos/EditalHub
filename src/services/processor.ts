@@ -1,8 +1,8 @@
 // Trigger redeploy to load env vars
 import prisma from '../lib/prisma';
 import { geminiService } from './gemini';
-import { azureStorage } from './azureStorage';
 import { BlobServiceClient } from '@azure/storage-blob';
+
 export async function processEdital(editalId: string) {
   console.log(`Iniciando processamento do edital: ${editalId}`);
 
@@ -13,8 +13,14 @@ export async function processEdital(editalId: string) {
     });
 
     if (!edital || !edital.nome_arquivo) {
-      throw new Error('Edital não encontrado ou arquivo não disponível');
+      throw new Error('Edital não encontrado ou arquivo não disponível no storage');
     }
+
+    // Limpar erro anterior se houver
+    await prisma.edital.update({
+      where: { id: editalId },
+      data: { erro_mensagem: null }
+    });
 
     // 1. Download do PDF do Azure usando o Connection String (Seguro)
     console.log(`Baixando arquivo do Azure: ${edital.nome_arquivo}`);
@@ -35,8 +41,6 @@ export async function processEdital(editalId: string) {
     // 3. Salvar no Banco
     console.log('Salvando dados extraídos...');
     
-    // Guardar o texto completo não é mais necessário aqui, 
-    // mas se quiser guardar um resumo ou algo do tipo, pode ser feito depois.
     const fullText = "Texto extraído via Gemini Vision/Multimodal";
     
     // Criar ou Atualizar Concurso
@@ -49,6 +53,7 @@ export async function processEdital(editalId: string) {
         formacao: analysis.formacao,
         profissao: analysis.profissao,
         taxa_inscricao: analysis.taxa_inscricao,
+        salario_inicial: analysis.salario_inicial,
         idade_minima: analysis.idade_minima,
         idade_maxima: analysis.idade_maxima,
         link_inscricao: analysis.link_inscricao,
@@ -56,7 +61,7 @@ export async function processEdital(editalId: string) {
         inscricao_fim: analysis.inscricao_fim ? new Date(analysis.inscricao_fim) : null,
         data_prova: analysis.data_prova ? new Date(analysis.data_prova) : null,
         cargos: {
-          create: analysis.cargos.map((v: any) => ({
+          create: (analysis.cargos || []).map((v: any) => ({
             nome_cargo: v.nome_cargo,
             escolaridade: v.escolaridade,
             salario: v.salario,
@@ -72,7 +77,8 @@ export async function processEdital(editalId: string) {
       where: { id: edital.id },
       data: {
         status_processamento: 'processado',
-        texto_extraido: fullText.substring(0, 50000) // Guardar um resumo do texto
+        texto_extraido: fullText.substring(0, 50000),
+        erro_mensagem: null
       }
     });
 
@@ -80,10 +86,15 @@ export async function processEdital(editalId: string) {
     return concurso;
 
   } catch (error) {
-    console.error(`Erro ao processar edital ${editalId}:`, error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(`Erro ao processar edital ${editalId}:`, errorMsg);
+    
     await prisma.edital.update({
       where: { id: editalId },
-      data: { status_processamento: 'erro' }
+      data: { 
+        status_processamento: 'erro',
+        erro_mensagem: errorMsg
+      }
     });
     throw error;
   }

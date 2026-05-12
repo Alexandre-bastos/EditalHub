@@ -29,6 +29,7 @@ model Edital {
   data_download       DateTime?
   status_processamento String   @default("pendente") @db.VarChar(50)
   texto_extraido      String?  @db.NText
+  erro_mensagem       String?  @db.NText
   
   organizadora        Organizadora @relation(fields: [organizadora_id], references: [id])
   concursos           Concurso[]

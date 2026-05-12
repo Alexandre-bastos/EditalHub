@@ -66,9 +66,13 @@ const { title } = Astro.props;
           <p class="text-sm text-gray-500">Bem-vindo ao centro de controle do EditalHub.</p>
         </div>
         <div class="flex gap-4">
-          <button id="run-collector" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95">
+          <button id="run-collector" class="bg-white/5 hover:bg-white/10 text-white px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2 border border-white/10 active:scale-95">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><polyline points="22 4 22 10 16 10"/></svg>
-            Verificar Editais
+            Sincronizar Bancas
+          </button>
+          <button id="run-processor" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+            Processar com IA
           </button>
         </div>
       </header>
@@ -78,21 +82,39 @@ const { title } = Astro.props;
 
     <script>
       const runBtn = document.getElementById('run-collector');
+      const processBtn = document.getElementById('run-processor');
+
       runBtn?.addEventListener('click', async () => {
         runBtn.setAttribute('disabled', 'true');
-        runBtn.innerHTML = 'Processando...';
+        const originalHtml = runBtn.innerHTML;
+        runBtn.innerHTML = 'Sincronizando...';
         try {
           const res = await fetch('/api/collect', { method: 'POST' });
           const data = await res.json();
           alert(data.message);
+          window.location.reload();
         } catch (err) {
           alert('Erro ao iniciar coleta');
         } finally {
           runBtn.removeAttribute('disabled');
-          runBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><polyline points="22 4 22 10 16 10"/></svg>
-            Verificar Editais
-          `;
+          runBtn.innerHTML = originalHtml;
+        }
+      });
+
+      processBtn?.addEventListener('click', async () => {
+        processBtn.setAttribute('disabled', 'true');
+        const originalHtml = processBtn.innerHTML;
+        processBtn.innerHTML = 'Analisando com IA...';
+        try {
+          const res = await fetch('/api/process', { method: 'POST' });
+          const data = await res.json();
+          alert(data.message);
+          window.location.reload();
+        } catch (err) {
+          alert('Erro ao iniciar processamento');
+        } finally {
+          processBtn.removeAttribute('disabled');
+          processBtn.innerHTML = originalHtml;
         }
       });
     </script>
