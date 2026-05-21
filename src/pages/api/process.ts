@@ -69,9 +69,9 @@ export const POST: APIRoute = async ({ request }) => {
         await processEdital(edital.id);
         results.push({ id: edital.id, success: true });
         
-        // Delay de 2 segundos entre chamadas para evitar rate limit do Gemini
+        // Delay de 5 segundos entre chamadas para evitar rate limit do Gemini
         if (editais.length > 1) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 5000));
         }
       } catch (err) {
         results.push({ id: edital.id, success: false, error: err instanceof Error ? err.message : String(err) });

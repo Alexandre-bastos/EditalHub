@@ -82,13 +82,16 @@ async function main() {
     console.log('-> Limpando logs de auditoria...');
     await prisma.logAuditoria.deleteMany({});
 
+    console.log('-> Limpando editais descartados...');
+    await prisma.editalDescartado.deleteMany({});
+
     console.log('-> Limpando editais...');
     await prisma.edital.deleteMany({});
     
     console.log('-> Limpando organizadoras...');
     await prisma.organizadora.deleteMany({});
 
-    console.log('Tabelas de editais, vagas, concursos, logs e organizadoras limpas com sucesso!');
+    console.log('Tabelas de editais, descartados, vagas, concursos, logs e organizadoras limpas com sucesso!');
 
     // 4. Seeding das dezenas de organizadoras brasileiras e militares
     console.log(`-> Semeando ${ORGANIZADORAS_SEED.length} organizadoras...`);

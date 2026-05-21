@@ -34,7 +34,16 @@ export class GeminiService {
       3. Escolaridade predominante (Fundamental, Médio, Técnico ou Superior).
       4. Valor da taxa de inscrição (se houver múltiplos, use o da escolaridade superior).
       5. Salário Inicial: Identifique o menor salário oferecido entre todos os cargos (ou o salário base).
-      6. Datas: Início das inscrições, Fim das inscrições e Data da prova.
+      6. Datas importantes (Início das inscrições, Fim das inscrições e Data da prova):
+         - "inscricao_inicio": Data de início das inscrições. Deve ser convertida e retornada estritamente no formato YYYY-MM-DD.
+           Procure no edital por frases como "inscrições estarão abertas de/das...", "período de inscrições inicia em...", "a partir do dia...".
+           Traduza meses em português para números (ex: "2 de julho de 2025" vira "2025-07-02").
+         - "inscricao_fim": Data de término/encerramento das inscrições. Deve ser convertida e retornada estritamente no formato YYYY-MM-DD.
+           Esta informação é MANDATÓRIA e CRÍTICA. Se não estiver óbvia no texto principal das inscrições, faça uma varredura minuciosa por todo o documento (especialmente no Anexo do Cronograma Estimado / Calendário no final do PDF).
+           Procure por termos como "até as 23h59min do dia...", "período de inscrições encerra em...", "término das inscrições em...", "inscrições até DD/MM/YYYY".
+           Traduza meses em português para números (ex: "20 de julho de 2025" vira "2025-07-20").
+         - "data_prova": Data de realização da prova objetiva/escrita. Deve ser convertida e retornada no formato YYYY-MM-DD.
+           Procure no Cronograma ou nas seções de "DAS PROVAS". Se houver mais de uma data (ex: prova objetiva e prova discursiva em dias diferentes), use a data da primeira prova objetiva.
       7. Formação/Profissão: Se o edital for para uma área específica (ex: Saúde, Jurídico), identifique. Caso contrário, use "Diversas".
       8. Idade Mínima/Máxima: Identifique se houver limites de idade (comum em carreiras policiais).
       9. Link de Inscrição: Procure pelo link do portal do candidato no site da banca.

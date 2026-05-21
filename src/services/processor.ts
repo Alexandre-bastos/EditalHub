@@ -4,6 +4,44 @@ import { geminiService } from './gemini';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { azureStorage } from './azureStorage';
 
+function parseRobustDate(dateStr: any): Date | null {
+  if (!dateStr) return null;
+  if (dateStr instanceof Date) {
+    return isNaN(dateStr.getTime()) ? null : dateStr;
+  }
+  if (typeof dateStr !== 'string') return null;
+
+  const cleanStr = dateStr.trim();
+  if (cleanStr === "" || cleanStr.toLowerCase() === "null") return null;
+
+  // 1. Verifica formato YYYY-MM-DD (ex: "2025-07-20" ou "2025-07-20T23:59:59")
+  let match = cleanStr.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (match) {
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const day = parseInt(match[3], 10);
+    return new Date(year, month - 1, day, 23, 59, 59);
+  }
+
+  // 2. Verifica formato brasileiro DD/MM/YYYY ou DD-MM-YYYY (ex: "20/07/2025" ou "20-07-2025")
+  match = cleanStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+  if (match) {
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+    return new Date(year, month - 1, day, 23, 59, 59);
+  }
+
+  // 3. Fallback para o parse nativo do JS
+  const parsed = new Date(cleanStr);
+  if (!isNaN(parsed.getTime())) {
+    parsed.setHours(23, 59, 59, 999);
+    return parsed;
+  }
+
+  return null;
+}
+
 function meetsEntryRequirements(analysis: any): { valid: boolean; reason?: string } {
   if (!analysis.nome_concurso || analysis.nome_concurso.trim() === "") {
     return { valid: false, reason: "Nome do concurso ausente" };
@@ -12,25 +50,9 @@ function meetsEntryRequirements(analysis: any): { valid: boolean; reason?: strin
     return { valid: false, reason: "Data limite de inscrição ausente" };
   }
 
-  let dataFim: Date;
-  if (typeof analysis.inscricao_fim === 'string' && analysis.inscricao_fim.includes('-')) {
-    const parts = analysis.inscricao_fim.split('-');
-    if (parts.length === 3) {
-      const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10);
-      const day = parseInt(parts[2], 10);
-      dataFim = new Date(year, month - 1, day, 23, 59, 59);
-    } else {
-      dataFim = new Date(analysis.inscricao_fim);
-      dataFim.setHours(23, 59, 59, 999);
-    }
-  } else {
-    dataFim = new Date(analysis.inscricao_fim);
-    dataFim.setHours(23, 59, 59, 999);
-  }
-
-  if (isNaN(dataFim.getTime())) {
-    return { valid: false, reason: "Data limite de inscrição inválida" };
+  const dataFim = parseRobustDate(analysis.inscricao_fim);
+  if (!dataFim) {
+    return { valid: false, reason: `Data limite de inscrição inválida: ${analysis.inscricao_fim}` };
   }
 
   const hoje = new Date();
@@ -126,9 +148,9 @@ export async function processEdital(editalId: string) {
         idade_maxima: analysis.idade_maxima,
         link_inscricao: analysis.link_inscricao,
         resumo: analysis.resumo,
-        inscricao_inicio: analysis.inscricao_inicio ? new Date(analysis.inscricao_inicio) : null,
-        inscricao_fim: analysis.inscricao_fim ? new Date(analysis.inscricao_fim) : null,
-        data_prova: analysis.data_prova ? new Date(analysis.data_prova) : null,
+        inscricao_inicio: parseRobustDate(analysis.inscricao_inicio),
+        inscricao_fim: parseRobustDate(analysis.inscricao_fim),
+        data_prova: parseRobustDate(analysis.data_prova),
         cargos: {
           create: (analysis.cargos || []).map((v: any) => ({
             nome_cargo: v.nome_cargo,
