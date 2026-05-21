@@ -75,3 +75,31 @@ model Vaga {
 
   @@map("vaga")
 }
+
+model Usuario {
+  id           String         @id @default(uuid())
+  nome         String         @db.VarChar(255)
+  email        String         @unique @db.VarChar(255)
+  senha_hash   String         @db.VarChar(255)
+  ativo        Boolean        @default(true)
+  data_criacao DateTime       @default(now())
+  logs         LogAuditoria[]
+
+  @@map("usuario")
+}
+
+model LogAuditoria {
+  id           String   @id @default(uuid())
+  usuario_id   String?
+  usuario_nome String?  @db.VarChar(255)
+  acao         String   @db.VarChar(255)
+  entidade     String?  @db.VarChar(100)
+  entidade_id  String?  @db.VarChar(100)
+  detalhes     String?  @db.NText
+  data_criacao DateTime @default(now())
+  
+  usuario      Usuario? @relation(fields: [usuario_id], references: [id], onDelete: SetNull)
+
+  @@map("log_auditoria")
+}
+

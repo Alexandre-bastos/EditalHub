@@ -1,6 +1,12 @@
 ---
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import prisma from '../../lib/prisma';
+import { createAuditLog } from '../../services/audit';
+
+const currentUser = Astro.locals.user;
+if (!currentUser) {
+  return Astro.redirect('/login');
+}
 
 const { id } = Astro.params;
 const editalId = Astro.url.searchParams.get('edital');
@@ -29,6 +35,17 @@ if (editalId) {
         cargos: true 
       }
     });
+
+    // Registra na trilha de auditoria a criação manual do concurso
+    await createAuditLog(
+      currentUser.id,
+      currentUser.nome,
+      'Criou Concurso',
+      'Concurso',
+      concurso.id,
+      `Criou manualmente a ficha de dados para o edital "${concurso.edital.nome_edital}"`
+    );
+
     // Atualizar status do edital para não ficar "pendente" se estamos editando manual
     await prisma.edital.update({
       where: { id: editalId },
@@ -56,42 +73,140 @@ if (Astro.request.method === 'POST') {
   const action = formData.get('action');
 
   if (action === 'update_concurso') {
+    const nome_concurso = formData.get('nome_concurso')?.toString() || '';
+    const estado = formData.get('estado')?.toString() || null;
+    const taxa_inscricao = formData.get('taxa_inscricao') ? parseFloat(formData.get('taxa_inscricao')!.toString()) : null;
+    const salario_inicial = formData.get('salario_inicial') ? parseFloat(formData.get('salario_inicial')!.toString()) : null;
+    const inscricao_inicio = formData.get('inscricao_inicio') ? new Date(formData.get('inscricao_inicio')!.toString()) : null;
+    const inscricao_fim = formData.get('inscricao_fim') ? new Date(formData.get('inscricao_fim')!.toString()) : null;
+    const data_prova = formData.get('data_prova') ? new Date(formData.get('data_prova')!.toString()) : null;
+    const escolaridade = formData.get('escolaridade')?.toString() || null;
+    const formacao = formData.get('formacao')?.toString() || null;
+    const profissao = formData.get('profissao')?.toString() || null;
+    const registro_profissional = formData.get('registro_profissional')?.toString() || null;
+    const idade_minima = formData.get('idade_minima') ? parseInt(formData.get('idade_minima')!.toString()) : null;
+    const idade_maxima = formData.get('idade_maxima') ? parseInt(formData.get('idade_maxima')!.toString()) : null;
+    const link_inscricao = formData.get('link_inscricao')?.toString() || null;
+    const resumo = formData.get('resumo')?.toString() || null;
+
+    // Constrói o histórico de alterações (diff)
+    const changes: string[] = [];
+    const getDiff = (field: string, oldVal: any, newVal: any) => {
+      if (String(oldVal || '') !== String(newVal || '')) {
+        changes.push(`• **${field}**: de "${oldVal || 'vazio'}" para "${newVal || 'vazio'}"`);
+      }
+    };
+
+    getDiff('Título', concurso.nome_concurso, nome_concurso);
+    getDiff('Estado', concurso.estado, estado);
+    getDiff('Salário Inicial', concurso.salario_inicial, salario_inicial);
+    getDiff('Taxa de Inscrição', concurso.taxa_inscricao, taxa_inscricao);
+    getDiff('Escolaridade', concurso.escolaridade, escolaridade);
+    getDiff('Formação', concurso.formacao, formacao);
+    getDiff('Profissão', concurso.profissao, profissao);
+    getDiff('Registro Profissional', concurso.registro_profissional, registro_profissional);
+    getDiff('Idade Mínima', concurso.idade_minima, idade_minima);
+    getDiff('Idade Máxima', concurso.idade_maxima, idade_maxima);
+    
+    const oldInicio = concurso.inscricao_inicio ? new Date(concurso.inscricao_inicio).toISOString().split('T')[0] : null;
+    const newInicio = inscricao_inicio ? inscricao_inicio.toISOString().split('T')[0] : null;
+    getDiff('Inscrições (Início)', oldInicio, newInicio);
+
+    const oldFim = concurso.inscricao_fim ? new Date(concurso.inscricao_fim).toISOString().split('T')[0] : null;
+    const newFim = inscricao_fim ? inscricao_fim.toISOString().split('T')[0] : null;
+    getDiff('Inscrições (Fim)', oldFim, newFim);
+
+    const oldProva = concurso.data_prova ? new Date(concurso.data_prova).toISOString().split('T')[0] : null;
+    const newProva = data_prova ? data_prova.toISOString().split('T')[0] : null;
+    getDiff('Data Prova', oldProva, newProva);
+
+    getDiff('Link de Inscrição', concurso.link_inscricao, link_inscricao);
+    getDiff('Resumo', concurso.resumo, resumo);
+
+    const detalhes = changes.length > 0 ? changes.join('\n') : 'Nenhuma alteração de valor realizada.';
+
     await prisma.concurso.update({
       where: { id: concurso.id },
       data: {
-        nome_concurso: formData.get('nome_concurso')?.toString() || '',
-        estado: formData.get('estado')?.toString() || null,
-        taxa_inscricao: formData.get('taxa_inscricao') ? parseFloat(formData.get('taxa_inscricao')!.toString()) : null,
-        salario_inicial: formData.get('salario_inicial') ? parseFloat(formData.get('salario_inicial')!.toString()) : null,
-        inscricao_inicio: formData.get('inscricao_inicio') ? new Date(formData.get('inscricao_inicio')!.toString()) : null,
-        inscricao_fim: formData.get('inscricao_fim') ? new Date(formData.get('inscricao_fim')!.toString()) : null,
-        data_prova: formData.get('data_prova') ? new Date(formData.get('data_prova')!.toString()) : null,
-        escolaridade: formData.get('escolaridade')?.toString() || null,
-        formacao: formData.get('formacao')?.toString() || null,
-        profissao: formData.get('profissao')?.toString() || null,
-        registro_profissional: formData.get('registro_profissional')?.toString() || null,
-        idade_minima: formData.get('idade_minima') ? parseInt(formData.get('idade_minima')!.toString()) : null,
-        idade_maxima: formData.get('idade_maxima') ? parseInt(formData.get('idade_maxima')!.toString()) : null,
-        link_inscricao: formData.get('link_inscricao')?.toString() || null,
-        resumo: formData.get('resumo')?.toString() || null,
+        nome_concurso,
+        estado,
+        taxa_inscricao,
+        salario_inicial,
+        inscricao_inicio,
+        inscricao_fim,
+        data_prova,
+        escolaridade,
+        formacao,
+        profissao,
+        registro_profissional,
+        idade_minima,
+        idade_maxima,
+        link_inscricao,
+        resumo,
       }
     });
+
+    // Registra na trilha de auditoria
+    await createAuditLog(
+      currentUser.id,
+      currentUser.nome,
+      'Editou Concurso',
+      'Concurso',
+      concurso.id,
+      `Modificações na ficha de dados:\n${detalhes}`
+    );
+
     return Astro.redirect(`/concursos/${concurso.id}?success=true`);
   } else if (action === 'update_cargo') {
     const cargoId = formData.get('cargo_id')?.toString();
-    await prisma.vaga.update({
-      where: { id: cargoId },
-      data: {
-        nome_cargo: formData.get('nome_cargo')?.toString() || '',
-        escolaridade: formData.get('escolaridade')?.toString(),
-        salario: parseFloat(formData.get('salario')?.toString() || '0'),
-        quantidade: parseInt(formData.get('quantidade')?.toString() || '0'),
-        requisitos: formData.get('requisitos')?.toString(),
-      }
-    });
+    const nome_cargo = formData.get('nome_cargo')?.toString() || '';
+    const escolaridade = formData.get('escolaridade')?.toString() || '';
+    const salario = parseFloat(formData.get('salario')?.toString() || '0');
+    const quantidade = parseInt(formData.get('quantidade')?.toString() || '0');
+    const requisitos = formData.get('requisitos')?.toString() || '';
+
+    const oldCargo = concurso.cargos.find(c => c.id === cargoId);
+    if (oldCargo) {
+      const changes: string[] = [];
+      const getDiff = (field: string, oldVal: any, newVal: any) => {
+        if (String(oldVal || '') !== String(newVal || '')) {
+          changes.push(`• **${field}**: de "${oldVal || 'vazio'}" para "${newVal || 'vazio'}"`);
+        }
+      };
+
+      getDiff('Nome do Cargo', oldCargo.nome_cargo, nome_cargo);
+      getDiff('Escolaridade', oldCargo.escolaridade, escolaridade);
+      getDiff('Salário', oldCargo.salario, salario);
+      getDiff('Quantidade de Vagas', oldCargo.quantidade, quantidade);
+      getDiff('Requisitos', oldCargo.requisitos, requisitos);
+
+      const detalhes = changes.length > 0 ? changes.join('\n') : 'Nenhuma alteração de valor realizada.';
+
+      await prisma.vaga.update({
+        where: { id: cargoId },
+        data: {
+          nome_cargo,
+          escolaridade,
+          salario,
+          quantidade,
+          requisitos
+        }
+      });
+
+      // Registra na trilha de auditoria
+      await createAuditLog(
+        currentUser.id,
+        currentUser.nome,
+        'Atualizou Cargo',
+        'Concurso',
+        concurso.id,
+        `Atualizou informações do cargo "${nome_cargo}":\n${detalhes}`
+      );
+    }
+
     return Astro.redirect(`/concursos/${concurso.id}?success=true`);
   } else if (action === 'add_cargo') {
-    await prisma.vaga.create({
+    const newCargo = await prisma.vaga.create({
       data: {
         concurso_id: concurso.id,
         nome_cargo: 'Novo Cargo',
@@ -99,15 +214,51 @@ if (Astro.request.method === 'POST') {
         salario: 0
       }
     });
+
+    // Registra na trilha de auditoria
+    await createAuditLog(
+      currentUser.id,
+      currentUser.nome,
+      'Adicionou Cargo',
+      'Concurso',
+      concurso.id,
+      `Adicionou o cargo inicial "${newCargo.nome_cargo}" ao concurso`
+    );
+
     return Astro.redirect(`/concursos/${concurso.id}?success=true`);
   } else if (action === 'delete_cargo') {
     const cargoId = formData.get('cargo_id')?.toString();
+    const oldCargo = concurso.cargos.find(c => c.id === cargoId);
+    const cargoNome = oldCargo ? oldCargo.nome_cargo : 'Desconhecido';
+
     await prisma.vaga.delete({ where: { id: cargoId } });
+
+    // Registra na trilha de auditoria
+    await createAuditLog(
+      currentUser.id,
+      currentUser.nome,
+      'Excluiu Cargo',
+      'Concurso',
+      concurso.id,
+      `Excluiu definitivamente o cargo "${cargoNome}" do concurso`
+    );
+
     return Astro.redirect(`/concursos/${concurso.id}?success=true`);
   }
 }
 
 const success = Astro.url.searchParams.get('success') === 'true';
+
+// Busca os logs de auditoria correspondentes a este concurso
+const auditLogs = await prisma.logAuditoria.findMany({
+  where: {
+    entidade: 'Concurso',
+    entidade_id: concurso.id
+  },
+  orderBy: {
+    data_criacao: 'desc'
+  }
+});
 ---
 
 <DashboardLayout title="Detalhes do Concurso">
@@ -345,5 +496,54 @@ const success = Astro.url.searchParams.get('success') === 'true';
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Histórico de Auditoria e Alterações -->
+  <div class="glass-card p-8 mt-8 border-white/5 bg-[#0f0f11]/30">
+    <h3 class="font-outfit font-semibold text-xs mb-6 text-gray-400 uppercase tracking-widest flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-400"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Histórico de Auditoria do Concurso
+    </h3>
+    
+    {auditLogs.length === 0 ? (
+      <div class="p-6 text-center text-xs text-gray-500 italic bg-white/[0.01] rounded-xl border border-white/5">
+        Nenhum registro de auditoria disponível para este concurso.
+      </div>
+    ) : (
+      <div class="relative pl-6 border-l border-white/5 space-y-6">
+        {auditLogs.map(log => (
+          <div class="relative group/timeline">
+            <!-- Ponto na linha do tempo -->
+            <div class="absolute -left-[32px] top-1.5 w-3.5 h-3.5 rounded-full bg-[#0a0a0b] border-2 border-indigo-500/50 flex items-center justify-center group-hover/timeline:border-indigo-400 transition-colors">
+              <div class="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-semibold text-gray-200">{log.usuario_nome}</span>
+                <span class={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
+                  log.acao === 'Criou Concurso'
+                    ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                    : log.acao === 'Excluiu Cargo'
+                      ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                      : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                }`}>
+                  {log.acao}
+                </span>
+              </div>
+              <span class="text-[10px] text-gray-500 font-mono">
+                {new Date(log.data_criacao).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' })}
+              </span>
+            </div>
+
+            {log.detalhes && (
+              <div class="bg-white/[0.015] border border-white/5 rounded-xl p-3.5 mt-2 text-xs text-gray-400 leading-relaxed font-mono whitespace-pre-line border-l-2 border-l-indigo-500/30">
+                {log.detalhes}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
   </div>
 </DashboardLayout>

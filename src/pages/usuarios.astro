@@ -1,0 +1,335 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import prisma from '../lib/prisma';
+import { hashPassword } from '../lib/auth';
+import { createAuditLog } from '../services/audit';
+
+// Obtém o usuário logado do Astro.locals (injetado pelo middleware)
+const currentUser = Astro.locals.user;
+
+if (!currentUser) {
+  return Astro.redirect('/login');
+}
+
+let errorMessage = '';
+let successMessage = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const action = formData.get('action')?.toString();
+
+    if (action === 'create') {
+      const nome = formData.get('nome')?.toString().trim();
+      const email = formData.get('email')?.toString().trim().toLowerCase();
+      const password = formData.get('password')?.toString();
+      const ativo = formData.get('ativo') === 'true';
+
+      if (!nome || !email || !password) {
+        errorMessage = 'Por favor, preencha todos os campos obrigatórios.';
+      } else {
+        // Verifica se o e-mail já está cadastrado
+        const existing = await prisma.usuario.findUnique({ where: { email } });
+        if (existing) {
+          errorMessage = 'Este endereço de e-mail já está em uso.';
+        } else {
+          const senha_hash = hashPassword(password);
+          const newUser = await prisma.usuario.create({
+            data: {
+              nome,
+              email,
+              senha_hash,
+              ativo
+            }
+          });
+
+          // Registra na trilha de auditoria
+          await createAuditLog(
+            currentUser.id,
+            currentUser.nome,
+            'Criou Usuário',
+            'Usuario',
+            newUser.id,
+            `Criou o usuário admin "${newUser.nome}" (${newUser.email}) com status ${newUser.ativo ? 'Ativo' : 'Inativo'}`
+          );
+
+          successMessage = `Usuário "${newUser.nome}" criado com sucesso!`;
+        }
+      }
+    } else if (action === 'toggle') {
+      const targetId = formData.get('id')?.toString();
+      
+      if (!targetId) {
+        errorMessage = 'ID do usuário não fornecido.';
+      } else if (targetId === currentUser.id) {
+        errorMessage = 'Segurança: Você não pode desativar a sua própria conta.';
+      } else {
+        const user = await prisma.usuario.findUnique({ where: { id: targetId } });
+        if (!user) {
+          errorMessage = 'Usuário não encontrado.';
+        } else {
+          const newStatus = !user.ativo;
+          await prisma.usuario.update({
+            where: { id: targetId },
+            data: { ativo: newStatus }
+          });
+
+          // Registra na trilha de auditoria
+          await createAuditLog(
+            currentUser.id,
+            currentUser.nome,
+            'Alterou Status do Usuário',
+            'Usuario',
+            targetId,
+            `Alterou o status do usuário "${user.nome}" (${user.email}) para ${newStatus ? 'Ativo' : 'Inativo'}`
+          );
+
+          successMessage = `Status do usuário "${user.nome}" alterado para ${newStatus ? 'Ativo' : 'Inativo'}.`;
+        }
+      }
+    } else if (action === 'delete') {
+      const targetId = formData.get('id')?.toString();
+
+      if (!targetId) {
+        errorMessage = 'ID do usuário não fornecido.';
+      } else if (targetId === currentUser.id) {
+        errorMessage = 'Segurança: Você não pode excluir a sua própria conta.';
+      } else {
+        const user = await prisma.usuario.findUnique({ where: { id: targetId } });
+        if (!user) {
+          errorMessage = 'Usuário não encontrado.';
+        } else {
+          // Deleta o usuário. A relação com LogAuditoria tem onDelete: SetNull, 
+          // então os logs do usuário deletado permanecerão preservando a auditoria.
+          await prisma.usuario.delete({ where: { id: targetId } });
+
+          // Registra na trilha de auditoria
+          await createAuditLog(
+            currentUser.id,
+            currentUser.nome,
+            'Excluiu Usuário',
+            'Usuario',
+            targetId,
+            `Excluiu definitivamente o usuário "${user.nome}" (${user.email})`
+          );
+
+          successMessage = `Usuário "${user.nome}" excluído com sucesso.`;
+        }
+      }
+    }
+  } catch (error: any) {
+    errorMessage = `Erro ao processar requisição: ${error.message}`;
+  }
+}
+
+// Busca todos os usuários cadastrados
+const users = await prisma.usuario.findMany({
+  orderBy: { data_criacao: 'desc' }
+});
+---
+
+<DashboardLayout title="Usuários">
+  
+  <!-- Banner de Feedback de Erro -->
+  {errorMessage && (
+    <div class="glass-card p-4 border-red-500/20 bg-red-500/5 mb-6 flex items-center gap-3">
+      <div class="p-2 bg-red-500/10 rounded-lg text-red-400">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-red-200">{errorMessage}</p>
+      </div>
+    </div>
+  )}
+
+  <!-- Banner de Feedback de Sucesso -->
+  {successMessage && (
+    <div class="glass-card p-4 border-green-500/20 bg-green-500/5 mb-6 flex items-center gap-3">
+      <div class="p-2 bg-green-500/10 rounded-lg text-green-400">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-green-200">{successMessage}</p>
+      </div>
+    </div>
+  )}
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    
+    <!-- Painel Lateral: Cadastro de Usuário (1/3 col) -->
+    <div class="glass-card p-6 border-white/5 bg-[#0f0f11]/50 backdrop-blur-sm lg:col-span-1">
+      <h3 class="font-outfit font-bold text-lg text-white mb-2 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+        Novo Usuário
+      </h3>
+      <p class="text-xs text-gray-400 mb-6 leading-relaxed">Cadastre novos administradores ou revisores com acesso ao painel de controle do EditalHub.</p>
+
+      <form method="POST" class="space-y-4">
+        <input type="hidden" name="action" value="create" />
+        
+        <div>
+          <label for="nome" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nome Completo</label>
+          <input 
+            type="text" 
+            name="nome" 
+            id="nome" 
+            required 
+            placeholder="ex: Alexandre Bastos"
+            class="w-full bg-[#141416] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="email" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">E-mail</label>
+          <input 
+            type="email" 
+            name="email" 
+            id="email" 
+            required 
+            placeholder="exemplo@editalhub.com"
+            class="w-full bg-[#141416] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="password" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Senha de Acesso</label>
+          <input 
+            type="password" 
+            name="password" 
+            id="password" 
+            required 
+            placeholder="Mínimo 6 caracteres"
+            class="w-full bg-[#141416] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="ativo" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Status Inicial</label>
+          <select 
+            name="ativo" 
+            id="ativo"
+            class="w-full bg-[#141416] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-all"
+          >
+            <option value="true" selected>Ativo (Acesso Liberado)</option>
+            <option value="false">Inativo (Acesso Bloqueado)</option>
+          </select>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-blue-900/25 active:scale-[0.98] mt-2 cursor-pointer flex items-center justify-center gap-2 text-sm"
+        >
+          Cadastrar Usuário
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Lista de Usuários Existentes (2/3 col) -->
+    <div class="glass-card overflow-hidden border-white/5 bg-[#0f0f11]/30 lg:col-span-2">
+      <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+        <div>
+          <h3 class="font-outfit font-bold text-sm text-white">Usuários do Sistema</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Gerencie os administradores e logs de atividade.</p>
+        </div>
+        <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-bold text-gray-400">
+          {users.length} {users.length === 1 ? 'Cadastrado' : 'Cadastrados'}
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="text-[10px] text-gray-500 uppercase tracking-widest bg-white/[0.02]">
+              <th class="px-6 py-4 font-semibold">Nome</th>
+              <th class="px-6 py-4 font-semibold">E-mail</th>
+              <th class="px-6 py-4 font-semibold">Data Cadastro</th>
+              <th class="px-6 py-4 font-semibold">Status</th>
+              <th class="px-6 py-4 font-semibold text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5 text-sm">
+            {users.map(user => {
+              const isSelf = user.id === currentUser.id;
+              return (
+                <tr class="hover:bg-white/[0.01] transition-colors group">
+                  <td class="px-6 py-4 font-medium text-white flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-[10px] uppercase">
+                      {user.nome.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('')}
+                    </div>
+                    <div class="flex flex-col">
+                      <span>{user.nome}</span>
+                      {isSelf && (
+                        <span class="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 py-0.2 rounded w-fit mt-0.5 font-bold uppercase tracking-wider">
+                          Você
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-gray-300 font-mono text-xs">{user.email}</td>
+                  <td class="px-6 py-4 text-gray-400 text-xs font-mono">
+                    {new Date(user.data_criacao).toLocaleDateString('pt-BR')}
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-1.5">
+                      <span class={`w-1.5 h-1.5 rounded-full ${user.ativo ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                      <span class={`text-[10px] font-bold uppercase tracking-wider ${user.ativo ? 'text-green-500' : 'text-red-500'}`}>
+                        {user.ativo ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex justify-end gap-2 items-center">
+                      <!-- Ação: Ativar/Desativar -->
+                      <form method="POST" class="inline">
+                        <input type="hidden" name="action" value="toggle" />
+                        <input type="hidden" name="id" value={user.id} />
+                        <button 
+                          type="submit" 
+                          disabled={isSelf}
+                          class={`px-2.5 py-1 text-[10px] font-bold rounded uppercase border transition-all cursor-pointer ${
+                            isSelf 
+                              ? 'border-white/5 text-gray-600 cursor-not-allowed opacity-30'
+                              : user.ativo
+                                ? 'border-amber-500/20 bg-amber-500/5 text-amber-500 hover:bg-amber-500/15'
+                                : 'border-green-500/20 bg-green-500/5 text-green-500 hover:bg-green-500/15'
+                          }`}
+                          title={isSelf ? "Não é possível desativar a própria conta" : user.ativo ? "Desativar acesso" : "Reativar acesso"}
+                        >
+                          {user.ativo ? 'Bloquear' : 'Liberar'}
+                        </button>
+                      </form>
+
+                      <!-- Ação: Excluir -->
+                      <form 
+                        method="POST" 
+                        class="inline"
+                        onsubmit="return confirm('Tem certeza de que deseja excluir definitivamente este usuário? Os logs de auditoria dele serão mantidos, mas a conta será removida.');"
+                      >
+                        <input type="hidden" name="action" value="delete" />
+                        <input type="hidden" name="id" value={user.id} />
+                        <button 
+                          type="submit" 
+                          disabled={isSelf}
+                          class={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+                            isSelf 
+                              ? 'border-white/5 text-gray-600 cursor-not-allowed opacity-30'
+                              : 'border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/15 hover:text-red-300'
+                          }`}
+                          title={isSelf ? "Não é possível excluir a própria conta" : "Excluir usuário"}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</DashboardLayout>

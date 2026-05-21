@@ -1,0 +1,5 @@
+---
+// Rota de Logout: Limpa o cookie de sessão e redireciona o usuário para a tela de login
+Astro.cookies.delete('session', { path: '/' });
+return Astro.redirect('/login');
+---
