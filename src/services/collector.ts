@@ -286,6 +286,20 @@ async function processGenericContest(
     return;
   }
 
+  // Otimização: verifica se o edital já foi processado e rejeitado por não atender aos requisitos
+  const alreadyDiscarded = await prisma.editalDescartado.findFirst({
+    where: {
+      OR: [
+        { nome_edital: nome },
+        { url_edital: link }
+      ]
+    }
+  });
+  if (alreadyDiscarded) {
+    console.log(`    > Pulando (já processado e descartado anteriormente: ${alreadyDiscarded.motivo_descarte}).`);
+    return;
+  }
+
   try {
     let html: string;
     if (client.page) {

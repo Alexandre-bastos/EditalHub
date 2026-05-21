@@ -25,6 +25,15 @@ if (Astro.request.method === 'POST') {
       });
 
       if (edital) {
+        // Registrar na tabela de descartados para não ser reprocessado
+        await prisma.editalDescartado.create({
+          data: {
+            nome_edital: edital.nome_edital,
+            url_edital: edital.url_edital,
+            motivo_descarte: 'Excluído manualmente pelo administrador'
+          }
+        });
+
         // 2. Se possuir arquivo, remover do storage
         if (edital.nome_arquivo) {
           console.log(`[Exclusão] Excluindo PDF do Blob: ${edital.nome_arquivo}`);
@@ -67,7 +76,7 @@ if (Astro.request.method === 'POST') {
   }
 }
 
-const editais = await prisma.edital.findMany({
+const allEditais = await prisma.edital.findMany({
   where: { 
     is_valido: true
   },
@@ -76,6 +85,21 @@ const editais = await prisma.edital.findMany({
     organizadora: true,
     concursos: true
   }
+});
+
+const hoje = new Date();
+const editais = allEditais.filter(edital => {
+  if (edital.concursos && edital.concursos.length > 0) {
+    const concurso = edital.concursos[0];
+    if (concurso.inscricao_fim) {
+      const dataFim = new Date(concurso.inscricao_fim);
+      dataFim.setHours(23, 59, 59, 999);
+      if (dataFim < hoje) {
+        return false;
+      }
+    }
+  }
+  return true;
 });
 
 const organizadoras = await prisma.organizadora.findMany({

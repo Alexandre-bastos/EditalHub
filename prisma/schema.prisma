@@ -104,3 +104,13 @@ model LogAuditoria {
   @@map("log_auditoria")
 }
 
+model EditalDescartado {
+  id              String   @id @default(uuid())
+  nome_edital     String   @db.VarChar(255)
+  url_edital      String   @db.VarChar(500)
+  motivo_descarte String   @db.VarChar(255)
+  data_descarte   DateTime @default(now())
+
+  @@map("edital_descartado")
+}
+

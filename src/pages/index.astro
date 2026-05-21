@@ -10,7 +10,30 @@ let errorMsg = null;
 
 try {
   totalOrganizadoras = await prisma.organizadora.count({ where: { ativo: true } });
-  totalEditais = await prisma.edital.count({ where: { is_valido: true } });
+  
+  const allValidEditais = await prisma.edital.findMany({
+    where: { is_valido: true },
+    orderBy: { data_download: 'desc' },
+    include: { organizadora: true, concursos: true }
+  });
+  
+  const hoje = new Date();
+  const vigentes = allValidEditais.filter(edital => {
+    if (edital.concursos && edital.concursos.length > 0) {
+      const concurso = edital.concursos[0];
+      if (concurso.inscricao_fim) {
+        const dataFim = new Date(concurso.inscricao_fim);
+        dataFim.setHours(23, 59, 59, 999);
+        if (dataFim < hoje) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
+  
+  totalEditais = vigentes.length;
+  
   editaisPendentes = await prisma.edital.count({ 
     where: { 
       status_processamento: 'pendente',
@@ -18,12 +41,8 @@ try {
     } 
   });
   
-  ultimosEditais = await prisma.edital.findMany({
-    where: { is_valido: true },
-    take: 5,
-    orderBy: { data_download: 'desc' },
-    include: { organizadora: true, concursos: true }
-  });
+  // Para exibir apenas os últimos coletados que ainda estão vigentes ou pendentes
+  ultimosEditais = vigentes.slice(0, 5);
 } catch (err) {
   console.error('Erro ao carregar Dashboard:', err);
   errorMsg = err instanceof Error ? err.message : String(err);
