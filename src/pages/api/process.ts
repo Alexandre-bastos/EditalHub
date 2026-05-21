@@ -12,16 +12,43 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const { editalId } = body;
+    const workerUrl = process.env.AZURE_WORKER_URL;
 
-    if (editalId) {
-      await processEdital(editalId);
-      return new Response(JSON.stringify({ message: 'Edital processado com sucesso!' }), {
+    // Se a URL do Worker na Azure estiver configurada, delega a tarefa
+    if (workerUrl) {
+      console.log('Direcionando requisição de processamento para o Azure Function Worker:', workerUrl);
+      
+      const res = await fetch(workerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ editalId })
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Erro na Azure Function (${res.status}): ${errorText}`);
+      }
+
+      const data = await res.json();
+      return new Response(JSON.stringify({
+        message: 'Processamento de editais iniciado com sucesso em segundo plano na Azure!',
+        details: data
+      }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // Processamento em lote
+    // Fallback: Execução local (desenvolvimento)
+    if (editalId) {
+      await processEdital(editalId);
+      return new Response(JSON.stringify({ message: 'Edital processado com sucesso localmente!' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Processamento em lote local
     const editais = await prisma.edital.findMany({
       where: { 
         status_processamento: { in: ['pendente', 'erro'] },
@@ -30,7 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     if (editais.length === 0) {
-      return new Response(JSON.stringify({ message: 'Nenhum edital pendente para processar.' }), {
+      return new Response(JSON.stringify({ message: 'Nenhum edital pendente para processar localmente.' }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -42,7 +69,7 @@ export const POST: APIRoute = async ({ request }) => {
         await processEdital(edital.id);
         results.push({ id: edital.id, success: true });
         
-        // Delay de 2 segundos entre chamadas para evitar 429 (Quota do Gemini)
+        // Delay de 2 segundos entre chamadas para evitar rate limit do Gemini
         if (editais.length > 1) {
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
@@ -54,7 +81,7 @@ export const POST: APIRoute = async ({ request }) => {
     const successCount = results.filter(r => r.success).length;
 
     return new Response(JSON.stringify({
-      message: `Processamento finalizado: ${successCount} sucesso(s), ${results.length - successCount} erro(s).`,
+      message: `Processamento local finalizado: ${successCount} sucesso(s), ${results.length - successCount} erro(s).`,
       results
     }), {
       status: 200,
