@@ -5,18 +5,37 @@ import prisma from '../lib/prisma';
 import { azureStorage } from './azureStorage';
 
 const EXCLUDE_KEYWORDS = [
-  'resultado final',
-  'resultado definitivo',
+  'resultado',
   'homologação',
-  'classificação final',
+  'classificação',
   'convocação',
   'posse',
   'encerramento',
-  'resultado da prova',
   'gabarito',
   'cronograma',
   'aviso',
-  'comunicado'
+  'comunicado',
+  'errata',
+  'recurso',
+  'resposta',
+  'isenção',
+  'isento',
+  'prorrogação',
+  'local de prova',
+  'locais de prova',
+  'relação nominal',
+  'relação de candidatos',
+  'lista de candidatos',
+  'nota ',
+  'prova de títulos',
+  'prova prática',
+  'prova oral',
+  'aptidão física',
+  'taf',
+  'exame médico',
+  'psicotécnico',
+  'divulgação',
+  'julgamento'
 ];
 
 export async function scrapeAll() {
@@ -105,7 +124,7 @@ async function internalScrapeVunesp(browser: Browser, org: any) {
         const $u = cheerio.load(await p.content());
         const link = $u('a[href$=".pdf"]').filter((i, el) => {
           const t = $u(el).text().toLowerCase();
-          return t.includes('edital de abertura');
+          return t.includes('edital de abertura') && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
         }).first();
         return link.length > 0 ? resolveUrl(link.attr('href'), 'https://www.vunesp.com.br') : null;
       });
@@ -123,7 +142,6 @@ async function internalScrapeCebraspe(browser: Browser, org: any) {
     const $ = cheerio.load(await page.content());
     const items: any[] = [];
     
-    // Cebraspe costuma listar concursos em tabelas ou listas simples
     $('a[href*="/concursos/"]').each((i, el) => {
       const nome = $(el).text().trim();
       const href = $(el).attr('href');
@@ -134,7 +152,7 @@ async function internalScrapeCebraspe(browser: Browser, org: any) {
       await processGenericContest(page, org, item.nome, item.link, async ($c) => {
         const link = $c('a').filter((i, el) => {
           const t = $c(el).text().toLowerCase();
-          return (t.includes('edital') && t.includes('abertura')) || t.includes('edital nº 1');
+          return ((t.includes('edital') && t.includes('abertura')) || t.includes('edital nº 1')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
         }).first();
         return link.length > 0 ? resolveUrl(link.attr('href'), 'https://www.cebraspe.org.br') : null;
       });
@@ -160,11 +178,22 @@ async function internalScrapeFCC(browser: Browser, org: any) {
 
     for (const item of items) {
       await processGenericContest(page, org, item.nome, item.link, async ($c) => {
-        const link = $c('a[href$=".pdf"]').filter((i, el) => {
+        const linkEl = $c('a').filter((i, el) => {
           const t = $c(el).text().toLowerCase();
-          return t.includes('edital') || t.includes('abertura');
+          const h = $c(el).attr('href') || '';
+          return (t.includes('edital') || t.includes('abertura')) && (h.includes('.pdf') || h.includes('rybena')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
         }).first();
-        return link.length > 0 ? resolveUrl(link.attr('href'), 'https://www.concursosfcc.com.br') : null;
+
+        if (linkEl.length > 0) {
+          let href = linkEl.attr('href') || '';
+          // Limpeza de links Rybena (FCC usa um visualizador que não é PDF direto)
+          if (href.includes('rybena') && href.includes('file=')) {
+            href = href.split('file=')[1];
+            if (href.includes('&')) href = href.split('&')[0];
+          }
+          return resolveUrl(href, 'https://www.concursosfcc.com.br');
+        }
+        return null;
       });
     }
   } finally {
@@ -191,13 +220,12 @@ async function internalScrapeCesgranrio(browser: Browser, org: any) {
         const portalLink = $c('a[href*="portal"]').first().attr('href');
         if (portalLink) {
           await p.goto(portalLink, { waitUntil: 'networkidle' });
-          // Espera carregar o portal Angular
           await p.waitForSelector('.list-group-item', { timeout: 10000 }).catch(() => {});
           const $p = cheerio.load(await p.content());
-          const editalItem = $p('.list-group-item:contains("EDITAL")').first();
-          // Se for Angular, talvez precise clicar no menu
-          // Mas vamos tentar pegar o link direto se estiver visível
-          const link = $p('a[href$=".pdf"]').filter((i, el) => $p(el).text().toLowerCase().includes('edital')).first();
+          const link = $p('a[href$=".pdf"]').filter((i, el) => {
+            const t = $p(el).text().toLowerCase();
+            return t.includes('edital') && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
+          }).first();
           return link.length > 0 ? resolveUrl(link.attr('href'), 'https://concursos.cesgranrio.org.br') : null;
         }
         return null;
@@ -227,7 +255,14 @@ async function processGenericContest(page: any, org: any, nome: string, link: st
     
     const editalUrl = await findEditalUrl($c, page);
 
-    if (!editalUrl) isValid = false;
+    if (!editalUrl) {
+      isValid = false;
+    } else {
+      const editalUrlLower = editalUrl.toLowerCase();
+      if (EXCLUDE_KEYWORDS.some(k => editalUrlLower.includes(k))) {
+        isValid = false;
+      }
+    }
 
     const edital = await prisma.edital.create({
       data: {
@@ -253,7 +288,14 @@ async function processGenericContest(page: any, org: any, nome: string, link: st
 async function uploadEditalToAzure(url: string, org: string, editalId: string) {
   try {
     const response = await axios({ url, method: 'GET', responseType: 'arraybuffer', timeout: 30000 });
+    
+    // Verificação básica se é PDF (Axios deve retornar application/pdf ou o buffer deve começar com %PDF)
     const buffer = Buffer.from(response.data);
+    if (!buffer.toString('utf-8', 0, 4).includes('%PDF')) {
+      console.error(`    > ALERTA: O arquivo baixado de ${url} não parece ser um PDF válido.`);
+      return;
+    }
+
     const blobName = `${org.replace(/\s+/g, '_')}/${new Date().getFullYear()}/${editalId}.pdf`;
     await azureStorage.uploadBuffer(buffer, blobName);
     await prisma.edital.update({

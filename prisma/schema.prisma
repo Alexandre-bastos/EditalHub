@@ -55,6 +55,7 @@ model Concurso {
   inscricao_fim        DateTime?
   data_prova           DateTime?
   link_inscricao       String?  @db.VarChar(500)
+  resumo               String?  @db.NText
 
   edital               Edital   @relation(fields: [edital_id], references: [id])
   cargos               Vaga[]

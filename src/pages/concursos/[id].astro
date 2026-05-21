@@ -60,12 +60,20 @@ if (Astro.request.method === 'POST') {
       where: { id: concurso.id },
       data: {
         nome_concurso: formData.get('nome_concurso')?.toString() || '',
-        estado: formData.get('estado')?.toString(),
-        taxa_inscricao: parseFloat(formData.get('taxa_inscricao')?.toString() || '0'),
-        salario_inicial: parseFloat(formData.get('salario_inicial')?.toString() || '0'),
+        estado: formData.get('estado')?.toString() || null,
+        taxa_inscricao: formData.get('taxa_inscricao') ? parseFloat(formData.get('taxa_inscricao')!.toString()) : null,
+        salario_inicial: formData.get('salario_inicial') ? parseFloat(formData.get('salario_inicial')!.toString()) : null,
         inscricao_inicio: formData.get('inscricao_inicio') ? new Date(formData.get('inscricao_inicio')!.toString()) : null,
         inscricao_fim: formData.get('inscricao_fim') ? new Date(formData.get('inscricao_fim')!.toString()) : null,
         data_prova: formData.get('data_prova') ? new Date(formData.get('data_prova')!.toString()) : null,
+        escolaridade: formData.get('escolaridade')?.toString() || null,
+        formacao: formData.get('formacao')?.toString() || null,
+        profissao: formData.get('profissao')?.toString() || null,
+        registro_profissional: formData.get('registro_profissional')?.toString() || null,
+        idade_minima: formData.get('idade_minima') ? parseInt(formData.get('idade_minima')!.toString()) : null,
+        idade_maxima: formData.get('idade_maxima') ? parseInt(formData.get('idade_maxima')!.toString()) : null,
+        link_inscricao: formData.get('link_inscricao')?.toString() || null,
+        resumo: formData.get('resumo')?.toString() || null,
       }
     });
     return Astro.redirect(`/concursos/${concurso.id}?success=true`);
@@ -150,6 +158,7 @@ const success = Astro.url.searchParams.get('success') === 'true';
         <form method="POST">
           <input type="hidden" name="action" value="update_concurso" />
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Dados Gerais -->
             <div class="md:col-span-2">
               <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Título / Órgão</label>
               <input name="nome_concurso" type="text" value={concurso.nome_concurso} class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" required />
@@ -157,32 +166,76 @@ const success = Astro.url.searchParams.get('success') === 'true';
             
             <div>
               <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Estado (UF)</label>
-              <input name="estado" type="text" value={concurso.estado} placeholder="Ex: SP, RJ, Nacional" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+              <input name="estado" type="text" value={concurso.estado || ''} placeholder="Ex: SP, RJ, Nacional" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
             </div>
             
             <div>
-              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Taxa de Inscrição (R$)</label>
-              <input name="taxa_inscricao" type="number" step="0.01" value={concurso.taxa_inscricao?.toString()} class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
-            </div>
-
-            <div>
-              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Data da Prova</label>
-              <input name="data_prova" type="date" value={concurso.data_prova?.toISOString().split('T')[0]} class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
-            </div>
-
-            <div>
               <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Salário Inicial (R$)</label>
-              <input name="salario_inicial" type="number" step="0.01" value={concurso.salario_inicial?.toString()} class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+              <input name="salario_inicial" type="number" step="0.01" value={concurso.salario_inicial?.toString() || ''} placeholder="Ex: 5500.00" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
             </div>
 
+            <div>
+              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Taxa de Inscrição (R$)</label>
+              <input name="taxa_inscricao" type="number" step="0.01" value={concurso.taxa_inscricao?.toString() || ''} placeholder="Ex: 120.00" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Escolaridade Predominante</label>
+              <input name="escolaridade" type="text" value={concurso.escolaridade || ''} placeholder="Ex: Superior, Médio, Técnico" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+            </div>
+
+            <!-- Perfil & Requisitos -->
+            <div>
+              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Formação Exigida</label>
+              <input name="formacao" type="text" value={concurso.formacao || ''} placeholder="Ex: Direito, Engenharia Civil, Qualquer Área" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Profissão / Cargo Geral</label>
+              <input name="profissao" type="text" value={concurso.profissao || ''} placeholder="Ex: Analista Judiciário, Guarda Municipal" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Registro Profissional Exigido</label>
+              <input name="registro_profissional" type="text" value={concurso.registro_profissional || ''} placeholder="Ex: OAB, CREA, COREN" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Idade Mínima</label>
+                <input name="idade_minima" type="number" value={concurso.idade_minima?.toString() || ''} placeholder="Ex: 18" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Idade Máxima</label>
+                <input name="idade_maxima" type="number" value={concurso.idade_maxima?.toString() || ''} placeholder="Ex: 35" class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+              </div>
+            </div>
+
+            <!-- Datas & Links -->
             <div>
               <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Inscrições (Início)</label>
-              <input name="inscricao_inicio" type="date" value={concurso.inscricao_inicio?.toISOString().split('T')[0]} class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+              <input name="inscricao_inicio" type="date" value={concurso.inscricao_inicio ? concurso.inscricao_inicio.toISOString().split('T')[0] : ''} class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
             </div>
 
             <div>
               <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Inscrições (Fim)</label>
-              <input name="inscricao_fim" type="date" value={concurso.inscricao_fim?.toISOString().split('T')[0]} class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+              <input name="inscricao_fim" type="date" value={concurso.inscricao_fim ? concurso.inscricao_fim.toISOString().split('T')[0] : ''} class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Data da Prova</label>
+              <input name="data_prova" type="date" value={concurso.data_prova ? concurso.data_prova.toISOString().split('T')[0] : ''} class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Link de Inscrição Oficial</label>
+              <input name="link_inscricao" type="url" value={concurso.link_inscricao || ''} placeholder="https://..." class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none" />
+            </div>
+
+            <!-- Resumo IA -->
+            <div class="md:col-span-2">
+              <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Resumo do Concurso (IA)</label>
+              <textarea name="resumo" rows="6" placeholder="Escreva uma breve descrição textual sobre o concurso (requisitos, taxas, prazos, etc)..." class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none resize-y">{concurso.resumo || ''}</textarea>
             </div>
           </div>
 

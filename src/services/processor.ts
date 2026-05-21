@@ -57,6 +57,7 @@ export async function processEdital(editalId: string) {
         idade_minima: analysis.idade_minima,
         idade_maxima: analysis.idade_maxima,
         link_inscricao: analysis.link_inscricao,
+        resumo: analysis.resumo,
         inscricao_inicio: analysis.inscricao_inicio ? new Date(analysis.inscricao_inicio) : null,
         inscricao_fim: analysis.inscricao_fim ? new Date(analysis.inscricao_fim) : null,
         data_prova: analysis.data_prova ? new Date(analysis.data_prova) : null,

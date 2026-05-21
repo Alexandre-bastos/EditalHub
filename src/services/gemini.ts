@@ -39,6 +39,7 @@ export class GeminiService {
       8. Idade Mínima/Máxima: Identifique se houver limites de idade (comum em carreiras policiais).
       9. Link de Inscrição: Procure pelo link do portal do candidato no site da banca.
       10. Lista de Cargos (Vagas): Nome do cargo, Escolaridade exigida, Salário, Quantidade de vagas e Requisitos.
+      11. Resumo do concurso: Crie um resumo bem estruturado, atrativo e completo do concurso em português, detalhando o órgão, destaques das oportunidades de vagas e informações essenciais (de 2 a 4 parágrafos).
 
       O formato de resposta DEVE ser EXATAMENTE este JSON:
       {
@@ -55,6 +56,7 @@ export class GeminiService {
         "inscricao_fim": "YYYY-MM-DD",
         "data_prova": "YYYY-MM-DD",
         "link_inscricao": "string",
+        "resumo": "string",
         "cargos": [
           {
             "nome_cargo": "string",
