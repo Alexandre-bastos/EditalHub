@@ -3,7 +3,7 @@ import { scrapeAll } from '../../services/collector';
 import prisma from '../../lib/prisma';
 import { decryptSession } from '../../lib/session';
 
-export const POST: APIRoute = async ({ cookies }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     let userNome = 'Sistema / Painel';
     let userId = null;
@@ -21,6 +21,28 @@ export const POST: APIRoute = async ({ cookies }) => {
       // Ignora erro de sessão
     }
 
+    let organizadoraId: string | undefined;
+    try {
+      const body = await request.json();
+      organizadoraId = body?.organizadoraId || undefined;
+    } catch (e) {
+      // Ignora se o corpo da requisição estiver vazio ou não for JSON
+    }
+
+    let organizadoraNome = '';
+    if (organizadoraId) {
+      const org = await prisma.organizadora.findUnique({
+        where: { id: organizadoraId }
+      });
+      if (org) {
+        organizadoraNome = org.nome;
+      }
+    }
+
+    const detalhesAudit = organizadoraNome
+      ? `Sincronização manual da banca "${organizadoraNome}" iniciada. Tarefas em segundo plano acionadas.`
+      : 'Sincronização manual de todas as bancas iniciada. Tarefas em segundo plano acionadas.';
+
     // Registra o início da sincronização na trilha de auditoria
     await prisma.logAuditoria.create({
       data: {
@@ -28,12 +50,11 @@ export const POST: APIRoute = async ({ cookies }) => {
         usuario_nome: userNome,
         acao: 'sincronizacao_iniciada',
         entidade: 'edital',
-        detalhes: 'Sincronização manual das bancas iniciada. Tarefas em segundo plano acionadas.'
+        detalhes: detalhesAudit
       }
     });
 
     const workerUrl = process.env.AZURE_WORKER_URL;
-
 
     // Se a URL do Worker na Azure estiver configurada, delega a tarefa
     if (workerUrl) {
@@ -41,7 +62,8 @@ export const POST: APIRoute = async ({ cookies }) => {
       
       const res = await fetch(workerUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ organizadoraId })
       });
 
       if (!res.ok) {
@@ -51,7 +73,9 @@ export const POST: APIRoute = async ({ cookies }) => {
 
       const data = await res.json();
       return new Response(JSON.stringify({
-        message: 'Sincronização das bancas iniciada com sucesso em segundo plano na Azure!',
+        message: organizadoraNome 
+          ? `Sincronização da banca "${organizadoraNome}" iniciada com sucesso em segundo plano na Azure!` 
+          : 'Sincronização das bancas iniciada com sucesso em segundo plano na Azure!',
         details: data
       }), {
         status: 200,
@@ -61,10 +85,12 @@ export const POST: APIRoute = async ({ cookies }) => {
 
     // Fallback: Executa localmente (desenvolvimento)
     console.log('Executando coleta localmente (modo de desenvolvimento)...');
-    await scrapeAll();
+    await scrapeAll(organizadoraId);
     
     return new Response(JSON.stringify({
-      message: 'Coleta multi-banca finalizada com sucesso localmente!'
+      message: organizadoraNome 
+        ? `Coleta da banca "${organizadoraNome}" finalizada com sucesso localmente!`
+        : 'Coleta multi-banca finalizada com sucesso localmente!'
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

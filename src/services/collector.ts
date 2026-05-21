@@ -50,9 +50,15 @@ const EXCLUDE_KEYWORDS = [
   'convocados'
 ];
 
-export async function scrapeAll() {
-  console.log('--- Iniciando Coleta Multi-Banca Completa ---');
-  const organizadoras = await prisma.organizadora.findMany({ where: { ativo: true } });
+export async function scrapeAll(organizadoraId?: string) {
+  console.log(organizadoraId ? `--- Iniciando Coleta para Banca ID: ${organizadoraId} ---` : '--- Iniciando Coleta Multi-Banca Completa ---');
+  
+  const whereClause: any = { ativo: true };
+  if (organizadoraId) {
+    whereClause.id = organizadoraId;
+  }
+  
+  const organizadoras = await prisma.organizadora.findMany({ where: whereClause });
   
   const browser = await chromium.launch({ headless: true });
   

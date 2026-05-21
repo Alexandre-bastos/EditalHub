@@ -161,6 +161,17 @@ const userInitials = userName
             btn.classList.remove('opacity-40', 'pointer-events-none');
           }
         });
+
+        const syncOrgSelect = document.getElementById('sync-org-select');
+        if (syncOrgSelect) {
+          if (disable) {
+            syncOrgSelect.setAttribute('disabled', 'true');
+            syncOrgSelect.classList.add('opacity-40', 'pointer-events-none');
+          } else {
+            syncOrgSelect.removeAttribute('disabled');
+            syncOrgSelect.classList.remove('opacity-40', 'pointer-events-none');
+          }
+        }
       }
 
       function showWidget(stage: string, message: string) {
