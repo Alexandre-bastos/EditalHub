@@ -87,6 +87,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     console.log('Executando coleta localmente (modo de desenvolvimento)...');
     await scrapeAll(organizadoraId);
     
+    // Registra a finalização local para o polling local funcionar perfeitamente
+    try {
+      await prisma.logAuditoria.create({
+        data: {
+          usuario_id: userId,
+          usuario_nome: userNome,
+          acao: 'sincronizacao_concluida',
+          entidade: 'edital',
+          detalhes: organizadoraNome
+            ? `Sincronização manual local da banca "${organizadoraNome}" concluída.`
+            : 'Sincronização manual local de todas as bancas concluída.'
+        }
+      });
+    } catch (logErr) {
+      console.error('Erro ao registrar log de conclusão de sincronização local:', logErr);
+    }
+    
     return new Response(JSON.stringify({
       message: organizadoraNome 
         ? `Coleta da banca "${organizadoraNome}" finalizada com sucesso localmente!`

@@ -130,6 +130,57 @@ const userInitials = userName
       </div>
     </div>
 
+    <!-- Sync Summary Modal (Premium Glassmorphism Overlay) -->
+    <div id="sync-summary-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+      <div class="bg-[#0f0f13]/90 border border-white/10 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transform scale-95 transition-all duration-300">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-emerald-500/10 rounded-xl text-emerald-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h3 class="text-lg font-outfit font-bold text-white">Sincronização Concluída</h3>
+        </div>
+        
+        <p class="text-sm text-gray-400 mb-6 leading-relaxed">
+          O processo de varredura nos portais e processamento com Inteligência Artificial foi finalizado. Confira o resumo do que foi modificado na base de dados:
+        </p>
+        
+        <div class="space-y-3 mb-6 bg-white/[0.02] border border-white/5 rounded-xl p-4 font-inter">
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-gray-400 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Editais Coletados (Novos)
+            </span>
+            <span class="font-bold font-mono text-gray-200" id="summary-valid">0</span>
+          </div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-gray-400 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Processados com IA (Vagas extraídas)
+            </span>
+            <span class="font-bold font-mono text-emerald-400" id="summary-processed">0</span>
+          </div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-gray-400 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              Erros de Processamento (IA)
+            </span>
+            <span class="font-bold font-mono text-red-400" id="summary-failed">0</span>
+          </div>
+          <div class="flex justify-between items-center text-sm border-t border-white/5 pt-2 mt-2">
+            <span class="text-gray-500 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+              Arquivos Filtrados / Descartados
+            </span>
+            <span class="font-bold font-mono text-gray-400" id="summary-ignored">0</span>
+          </div>
+        </div>
+        
+        <button id="close-summary-btn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98]">
+          Entendido (OK)
+        </button>
+      </div>
+    </div>
+
     <script>
       let isPollerActive = false;
       let pollerIntervalId: any = null;
@@ -212,7 +263,7 @@ const userInitials = userName
         disableAllButtons(true);
       }
 
-      function showWidgetSuccess() {
+      function showWidgetSuccess(summary: any) {
         if (!widget) return;
 
         if (widgetIcon) {
@@ -230,7 +281,7 @@ const userInitials = userName
         }
 
         if (widgetMessage) {
-          widgetMessage.innerText = 'Tudo pronto! Atualizando os dados...';
+          widgetMessage.innerText = 'Processo concluído com sucesso!';
         }
 
         if (widgetProgress) {
@@ -242,10 +293,29 @@ const userInitials = userName
         widget.classList.remove('border-blue-500/20');
         widget.classList.add('border-green-500/30');
 
-        // Aguarda 4 segundos e recarrega para exibir os novos dados e limpar o widget
+        // Preenche os dados no modal
+        const modal = document.getElementById('sync-summary-modal');
+        const modalContent = modal?.querySelector('div');
+        const validEl = document.getElementById('summary-valid');
+        const processedEl = document.getElementById('summary-processed');
+        const failedEl = document.getElementById('summary-failed');
+        const ignoredEl = document.getElementById('summary-ignored');
+
+        if (summary) {
+          if (validEl) validEl.innerText = summary.valid ?? '0';
+          if (processedEl) processedEl.innerText = summary.processed ?? '0';
+          if (failedEl) failedEl.innerText = summary.failed ?? '0';
+          if (ignoredEl) ignoredEl.innerText = summary.ignored ?? '0';
+        }
+
+        // Abre o modal com uma animação de fade e escala suave
         setTimeout(() => {
-          window.location.reload();
-        }, 4000);
+          if (modal && modalContent) {
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+          }
+        }, 1000);
       }
 
       function hideWidget() {
@@ -270,7 +340,7 @@ const userInitials = userName
               // Mudou de ativo para inativo agora: sucesso!
               lastActiveState = false;
               if (pollerIntervalId) clearInterval(pollerIntervalId);
-              showWidgetSuccess();
+              showWidgetSuccess(data.summary);
             } else {
               hideWidget();
             }
@@ -340,6 +410,22 @@ const userInitials = userName
           processBtn.removeAttribute('disabled');
           processBtn.innerHTML = originalHtml;
         }
+      });
+
+      // Ouvinte para o botão "Entendido (OK)" no modal de resumo
+      const closeSummaryBtn = document.getElementById('close-summary-btn');
+      closeSummaryBtn?.addEventListener('click', () => {
+        const modal = document.getElementById('sync-summary-modal');
+        const modalContent = modal?.querySelector('div');
+        
+        if (modal && modalContent) {
+          modalContent.classList.remove('scale-100');
+          modalContent.classList.add('scale-95');
+          modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+        
+        // Recarrega a página para atualizar toda a lista e os novos editais e badges
+        window.location.reload();
       });
 
       // Inicialização: Se houver qualquer sync rodando ao carregar a página,

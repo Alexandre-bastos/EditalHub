@@ -24,30 +24,61 @@ export const GET: APIRoute = async () => {
     let stage: 'idle' | 'scraping' | 'processing' = 'idle';
     let message = 'Nenhuma sincronização ativa no momento.';
     let active = false;
+    let summary: any = null;
 
     if (lastSyncLog) {
       const now = new Date();
       const diffMs = now.getTime() - new Date(lastSyncLog.data_criacao).getTime();
       const diffMinutes = diffMs / (1000 * 60);
 
-      // Considera a sincronização ativa se foi iniciada a menos de 15 minutos
-      if (diffMinutes < 15) {
+      // Busca se há um log de conclusão após o início deste sync
+      const completionLog = await prisma.logAuditoria.findFirst({
+        where: {
+          acao: 'sincronizacao_concluida',
+          data_criacao: {
+            gte: lastSyncLog.data_criacao
+          }
+        }
+      });
+
+      if (completionLog) {
+        // Se já existe log de finalização posterior à data de início, o sync concluiu!
+        active = false;
+        stage = 'idle';
+        message = 'Sincronização concluída com sucesso!';
+      } else if (diffMinutes < 15) {
+        // Se ainda não concluiu e está dentro de 15 minutos, consideramos ativo
         active = true;
         if (pendingCount > 0) {
           stage = 'processing';
           message = `Processando ${pendingCount} edital(ais) com Inteligência Artificial na Azure...`;
-        } else if (diffMinutes < 3) {
-          // Se começou a menos de 3 minutos e não há pendentes no banco ainda,
-          // assume que o crawler (scraper) está rodando e buscando novos PDFs
+        } else {
           stage = 'scraping';
           message = 'Buscando novos editais nos portais das bancas na Azure...';
-        } else {
-          // Passou de 3 minutos e não há nenhum edital pendente (ou tudo já foi processado)
-          active = false;
-          stage = 'idle';
-          message = 'Sincronização concluída com sucesso!';
         }
+      } else {
+        // Excedeu o timeout de segurança de 15 minutos
+        active = false;
+        stage = 'idle';
+        message = 'Sincronização finalizada por tempo limite.';
       }
+
+      // Sempre calcula o resumo detalhado para a última sincronização (ativa ou recém-concluída)
+      const editaisSinceSync = await prisma.edital.findMany({
+        where: {
+          data_criacao: {
+            gte: lastSyncLog.data_criacao
+          }
+        }
+      });
+
+      summary = {
+        total: editaisSinceSync.length,
+        valid: editaisSinceSync.filter(e => e.is_valido).length,
+        ignored: editaisSinceSync.filter(e => !e.is_valido).length,
+        processed: editaisSinceSync.filter(e => e.is_valido && e.status_processamento === 'processado').length,
+        failed: editaisSinceSync.filter(e => e.is_valido && e.status_processamento === 'erro').length
+      };
     }
 
     // Caso o status_processamento ainda acuse pendentes mas não haja log de sync recente,
@@ -63,6 +94,7 @@ export const GET: APIRoute = async () => {
       stage,
       pendingCount,
       message,
+      summary,
       timestamp: new Date().toISOString()
     }), {
       status: 200,
