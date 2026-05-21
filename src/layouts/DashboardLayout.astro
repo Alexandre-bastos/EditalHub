@@ -113,46 +113,231 @@ const userInitials = userName
       <slot />
     </main>
 
+    <!-- Floating Sync Status Widget (Premium Glassmorphism Toast) -->
+    <div id="sync-status-widget" class="fixed bottom-6 right-6 z-50 bg-[#0d0d11]/85 backdrop-blur-xl border border-blue-500/20 px-5 py-4 rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(59,130,246,0.15)] max-w-sm w-80 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-500 ease-out flex gap-3.5 items-start">
+      <div class="flex-shrink-0 mt-0.5" id="sync-widget-icon-container">
+        <!-- Spinner Loader Animado -->
+        <div class="w-5 h-5 rounded-full border-2 border-blue-500/20 border-t-blue-500 animate-spin"></div>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="text-xs font-semibold text-white uppercase tracking-wider mb-0.5" id="sync-widget-title">Sincronização Ativa</h4>
+        <p class="text-xs text-gray-400 leading-relaxed font-medium" id="sync-widget-message">Verificando status...</p>
+        
+        <!-- Barra de Progresso Fina -->
+        <div class="w-full bg-white/5 h-1 rounded-full mt-2.5 overflow-hidden">
+          <div id="sync-widget-progress" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full w-full animate-pulse transition-all duration-1000"></div>
+        </div>
+      </div>
+    </div>
+
     <script>
+      let isPollerActive = false;
+      let pollerIntervalId: any = null;
+      let lastActiveState = false;
+
+      // Elementos do Widget
+      const widget = document.getElementById('sync-status-widget');
+      const widgetIcon = document.getElementById('sync-widget-icon-container');
+      const widgetTitle = document.getElementById('sync-widget-title');
+      const widgetMessage = document.getElementById('sync-widget-message');
+      const widgetProgress = document.getElementById('sync-widget-progress');
+
+      // Botões no layout
       const runBtn = document.getElementById('run-collector');
       const processBtn = document.getElementById('run-processor');
 
+      function getAllSyncButtons() {
+        return document.querySelectorAll('#run-collector, #sync-btn, #run-processor, .process-btn');
+      }
+
+      function disableAllButtons(disable: boolean) {
+        const buttons = getAllSyncButtons();
+        buttons.forEach(btn => {
+          if (disable) {
+            btn.setAttribute('disabled', 'true');
+            btn.classList.add('opacity-40', 'pointer-events-none');
+          } else {
+            btn.removeAttribute('disabled');
+            btn.classList.remove('opacity-40', 'pointer-events-none');
+          }
+        });
+      }
+
+      function showWidget(stage: string, message: string) {
+        if (!widget) return;
+        
+        // Exibe o widget
+        widget.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+        widget.classList.add('translate-y-0', 'opacity-100');
+        
+        // Estilos padrão de atividade (azul)
+        widget.classList.remove('border-green-500/30');
+        widget.classList.add('border-blue-500/20');
+
+        if (widgetProgress) {
+          widgetProgress.classList.remove('bg-emerald-500', 'w-full');
+          widgetProgress.classList.add('bg-gradient-to-r', 'from-blue-500', 'to-indigo-600', 'animate-pulse');
+          if (stage === 'scraping') {
+            widgetProgress.style.width = '30%';
+          } else {
+            widgetProgress.style.width = '75%';
+          }
+        }
+
+        if (widgetIcon) {
+          widgetIcon.innerHTML = `<div class="w-5 h-5 rounded-full border-2 border-blue-500/20 border-t-blue-500 animate-spin"></div>`;
+        }
+
+        if (widgetTitle) {
+          widgetTitle.innerText = stage === 'scraping' ? 'Buscando Editais' : 'Processamento IA';
+          widgetTitle.classList.remove('text-green-400');
+          widgetTitle.classList.add('text-white');
+        }
+
+        if (widgetMessage) {
+          widgetMessage.innerText = message;
+        }
+
+        disableAllButtons(true);
+      }
+
+      function showWidgetSuccess() {
+        if (!widget) return;
+
+        if (widgetIcon) {
+          widgetIcon.innerHTML = `
+            <svg class="text-green-400 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          `;
+        }
+
+        if (widgetTitle) {
+          widgetTitle.innerText = 'Sincronizado!';
+          widgetTitle.classList.remove('text-white');
+          widgetTitle.classList.add('text-green-400');
+        }
+
+        if (widgetMessage) {
+          widgetMessage.innerText = 'Tudo pronto! Atualizando os dados...';
+        }
+
+        if (widgetProgress) {
+          widgetProgress.classList.remove('from-blue-500', 'to-indigo-600', 'animate-pulse');
+          widgetProgress.classList.add('bg-emerald-500');
+          widgetProgress.style.width = '100%';
+        }
+
+        widget.classList.remove('border-blue-500/20');
+        widget.classList.add('border-green-500/30');
+
+        // Aguarda 4 segundos e recarrega para exibir os novos dados e limpar o widget
+        setTimeout(() => {
+          window.location.reload();
+        }, 4000);
+      }
+
+      function hideWidget() {
+        if (!widget) return;
+        widget.classList.remove('translate-y-0', 'opacity-100');
+        widget.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        disableAllButtons(false);
+      }
+
+      async function checkSyncStatus() {
+        try {
+          const res = await fetch('/api/sync-status');
+          if (!res.ok) return;
+          
+          const data = await res.json();
+          
+          if (data.active) {
+            lastActiveState = true;
+            showWidget(data.stage, data.message);
+          } else {
+            if (lastActiveState) {
+              // Mudou de ativo para inativo agora: sucesso!
+              lastActiveState = false;
+              if (pollerIntervalId) clearInterval(pollerIntervalId);
+              showWidgetSuccess();
+            } else {
+              hideWidget();
+            }
+          }
+        } catch (err) {
+          console.error('Erro ao verificar status de sync:', err);
+        }
+      }
+
+      // Inicia Polling em segundo plano
+      function startPoller() {
+        if (isPollerActive) return;
+        isPollerActive = true;
+        
+        // Checagem imediata
+        checkSyncStatus();
+        
+        // Checagens a cada 6 segundos
+        pollerIntervalId = setInterval(checkSyncStatus, 6000);
+      }
+
+      // Expõe no objeto global window para uso em scripts de outras páginas
+      (window as any).startPoller = startPoller;
+
+
+      // Disparador de Coleta
       runBtn?.addEventListener('click', async () => {
         runBtn.setAttribute('disabled', 'true');
         const originalHtml = runBtn.innerHTML;
-        runBtn.innerHTML = 'Sincronizando...';
+        runBtn.innerHTML = 'Disparando...';
+        
         try {
           const res = await fetch('/api/collect', { method: 'POST' });
-          const data = await res.json();
-          alert(data.message);
-          window.location.reload();
+          if (res.ok) {
+            // Inicia imediatamente o poller para dar feedback ao usuário
+            startPoller();
+          } else {
+            alert('Falha ao disparar sincronização na Azure');
+            runBtn.removeAttribute('disabled');
+            runBtn.innerHTML = originalHtml;
+          }
         } catch (err) {
-          alert('Erro ao iniciar coleta');
-        } finally {
+          alert('Erro de rede ao iniciar sincronização');
           runBtn.removeAttribute('disabled');
           runBtn.innerHTML = originalHtml;
         }
       });
 
+      // Disparador de Processamento em Lote
       processBtn?.addEventListener('click', async () => {
         processBtn.setAttribute('disabled', 'true');
         const originalHtml = processBtn.innerHTML;
-        processBtn.innerHTML = 'Analisando com IA...';
+        processBtn.innerHTML = 'Disparando...';
+        
         try {
           const res = await fetch('/api/process', { method: 'POST' });
-          const data = await res.json();
-          alert(data.message);
-          window.location.reload();
+          if (res.ok) {
+            // Inicia imediatamente o poller
+            startPoller();
+          } else {
+            alert('Falha ao iniciar processamento na Azure');
+            processBtn.removeAttribute('disabled');
+            processBtn.innerHTML = originalHtml;
+          }
         } catch (err) {
-          alert('Erro ao iniciar processamento');
-        } finally {
+          alert('Erro de rede ao iniciar processamento');
           processBtn.removeAttribute('disabled');
           processBtn.innerHTML = originalHtml;
         }
       });
+
+      // Inicialização: Se houver qualquer sync rodando ao carregar a página,
+      // ativa automaticamente o widget flutuante e o poller
+      startPoller();
     </script>
 	</body>
 </html>
+
 
 <style is:global>
 	:root {

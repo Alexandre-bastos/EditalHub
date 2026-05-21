@@ -1,9 +1,39 @@
 import type { APIRoute } from 'astro';
 import { scrapeAll } from '../../services/collector';
+import prisma from '../../lib/prisma';
+import { decryptSession } from '../../lib/session';
 
-export const POST: APIRoute = async () => {
+export const POST: APIRoute = async ({ cookies }) => {
   try {
+    let userNome = 'Sistema / Painel';
+    let userId = null;
+
+    try {
+      const sessionToken = cookies.get('session')?.value;
+      if (sessionToken) {
+        const session = decryptSession(sessionToken);
+        if (session) {
+          userId = session.id;
+          userNome = session.nome;
+        }
+      }
+    } catch (e) {
+      // Ignora erro de sessão
+    }
+
+    // Registra o início da sincronização na trilha de auditoria
+    await prisma.logAuditoria.create({
+      data: {
+        usuario_id: userId,
+        usuario_nome: userNome,
+        acao: 'sincronizacao_iniciada',
+        entidade: 'edital',
+        detalhes: 'Sincronização manual das bancas iniciada. Tarefas em segundo plano acionadas.'
+      }
+    });
+
     const workerUrl = process.env.AZURE_WORKER_URL;
+
 
     // Se a URL do Worker na Azure estiver configurada, delega a tarefa
     if (workerUrl) {

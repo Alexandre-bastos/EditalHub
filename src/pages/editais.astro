@@ -54,13 +54,19 @@ const editais = await prisma.edital.findMany({
           {editais.map(edital => (
             <tr class="hover:bg-white/[0.01] transition-colors group">
               <td class="px-6 py-4">
-                <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition-colors">
+                <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition-colors flex items-center gap-2">
                   {edital.concursos[0]?.nome_concurso || edital.nome_edital}
+                  {edital.data_download && (new Date().getTime() - new Date(edital.data_download).getTime()) < (24 * 60 * 60 * 1000) && (
+                    <span class="inline-flex items-center px-1.5 py-0.5 bg-gradient-to-r from-emerald-500 to-teal-400 text-[#070708] text-[8px] font-extrabold rounded shadow-[0_0_8px_rgba(52,211,153,0.35)] animate-pulse uppercase tracking-wider shrink-0">
+                      Novo
+                    </span>
+                  )}
                 </p>
                 <div class="flex items-center gap-2 mt-1">
                    <p class="text-[10px] text-gray-500 truncate max-w-[250px]" title={edital.url_edital}>{edital.url_edital}</p>
                 </div>
               </td>
+
               <td class="px-6 py-4">
                 <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[9px] font-bold rounded-full border border-blue-500/20">
                   {edital.organizadora.nome}
@@ -140,8 +146,13 @@ const editais = await prisma.edital.findMany({
             body: JSON.stringify({ editalId }),
             headers: { 'Content-Type': 'application/json' }
           });
-          if (res.ok) window.location.reload();
-          else {
+          if (res.ok) {
+            if (typeof (window as any).startPoller === 'function') {
+              (window as any).startPoller();
+            } else {
+              window.location.reload();
+            }
+          } else {
             const data = await res.json();
             alert('Falha: ' + (data.error || 'Erro desconhecido'));
             btn.removeAttribute('disabled');
@@ -158,16 +169,26 @@ const editais = await prisma.edital.findMany({
     const syncBtn = document.getElementById('sync-btn');
     syncBtn?.addEventListener('click', async () => {
       syncBtn.setAttribute('disabled', 'true');
-      syncBtn.classList.add('animate-spin');
+      const originalHtml = syncBtn.innerHTML;
+      syncBtn.innerHTML = 'Disparando...';
+      
       try {
         const res = await fetch('/api/collect', { method: 'POST' });
-        if (res.ok) window.location.reload();
-        else alert('Erro ao sincronizar');
+        if (res.ok) {
+          if (typeof (window as any).startPoller === 'function') {
+            (window as any).startPoller();
+          } else {
+            window.location.reload();
+          }
+        } else {
+          alert('Erro ao sincronizar');
+          syncBtn.removeAttribute('disabled');
+          syncBtn.innerHTML = originalHtml;
+        }
       } catch (err) {
         alert('Erro na rede');
-      } finally {
         syncBtn.removeAttribute('disabled');
-        syncBtn.classList.remove('animate-spin');
+        syncBtn.innerHTML = originalHtml;
       }
     });
   </script>
