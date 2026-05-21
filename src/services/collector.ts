@@ -35,7 +35,19 @@ const EXCLUDE_KEYWORDS = [
   'exame médico',
   'psicotécnico',
   'divulgação',
-  'julgamento'
+  'julgamento',
+  'aditamento',
+  'aditivo',
+  'retificação',
+  'anulação',
+  'cancelamento',
+  'suspensão',
+  'suspenso',
+  'indeferido',
+  'deferido',
+  'classificados',
+  'aprovados',
+  'convocados'
 ];
 
 export async function scrapeAll() {

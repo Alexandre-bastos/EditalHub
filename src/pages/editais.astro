@@ -1,6 +1,71 @@
 ---
 import DashboardLayout from '../layouts/DashboardLayout.astro';
 import prisma from '../lib/prisma';
+import { azureStorage } from '../services/azureStorage';
+import { createAuditLog } from '../services/audit';
+
+const currentUser = Astro.locals.user;
+if (!currentUser) {
+  return Astro.redirect('/login');
+}
+
+let errorMessage = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const action = formData.get('action')?.toString();
+    const editalId = formData.get('editalId')?.toString();
+
+    if (action === 'delete' && editalId) {
+      // 1. Buscar edital
+      const edital = await prisma.edital.findUnique({
+        where: { id: editalId },
+        include: { concursos: true }
+      });
+
+      if (edital) {
+        // 2. Se possuir arquivo, remover do storage
+        if (edital.nome_arquivo) {
+          console.log(`[Exclusão] Excluindo PDF do Blob: ${edital.nome_arquivo}`);
+          await azureStorage.deleteBlob(edital.nome_arquivo);
+        }
+
+        // 3. Excluir cargos (vagas) vinculadas aos concursos do edital
+        for (const concurso of edital.concursos) {
+          await prisma.vaga.deleteMany({
+            where: { concurso_id: concurso.id }
+          });
+        }
+
+        // 4. Excluir concursos vinculados
+        await prisma.concurso.deleteMany({
+          where: { edital_id: editalId }
+        });
+
+        // 5. Excluir o edital do banco
+        await prisma.edital.delete({
+          where: { id: editalId }
+        });
+
+        // 6. Registrar auditoria
+        await createAuditLog(
+          currentUser.id,
+          currentUser.nome,
+          'Excluiu Edital',
+          'Edital',
+          editalId,
+          `Excluiu definitivamente o edital "${edital.nome_edital}" e removeu seu PDF do storage.`
+        );
+
+        return Astro.redirect('/editais');
+      }
+    }
+  } catch (err: any) {
+    console.error('Erro ao excluir edital:', err);
+    errorMessage = 'Falha ao excluir edital: ' + err.message;
+  }
+}
 
 const editais = await prisma.edital.findMany({
   where: { 
@@ -31,6 +96,13 @@ const editais = await prisma.edital.findMany({
       </button>
     </div>
   </div>
+
+  {errorMessage && (
+    <div class="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl mb-6 text-sm flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>{errorMessage}</span>
+    </div>
+  )}
 
   <div class="glass-card overflow-hidden">
     <div class="px-6 py-4 border-b border-white/5 bg-white/[0.01]">
@@ -123,6 +195,14 @@ const editais = await prisma.edital.findMany({
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7 20 7"/></svg>
                     </a>
                   )}
+
+                  <form method="POST" onsubmit="return confirm('Tem certeza que deseja excluir definitivamente este edital? Esta ação é irreversível e removerá todos os concursos/cargos vinculados, além de deletar o arquivo PDF na Azure.');" class="inline">
+                    <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="editalId" value={edital.id} />
+                    <button type="submit" class="p-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition-all border border-red-500/10" title="Excluir Edital">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                    </button>
+                  </form>
                 </div>
               </td>
             </tr>

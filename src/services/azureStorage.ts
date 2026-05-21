@@ -33,6 +33,19 @@ export class AzureStorageService {
     });
     return blockBlobClient.url;
   }
+
+  async deleteBlob(blobName: string) {
+    try {
+      const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
+      const response = await blockBlobClient.deleteIfExists();
+      console.log(`Blob ${blobName} excluído com sucesso: ${response.succeeded}`);
+      return response.succeeded;
+    } catch (err: any) {
+      console.error(`Erro ao excluir blob ${blobName}:`, err.message);
+      return false;
+    }
+  }
 }
 
 export const azureStorage = new AzureStorageService();
+
