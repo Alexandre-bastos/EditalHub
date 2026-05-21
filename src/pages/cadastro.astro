@@ -1,0 +1,170 @@
+---
+import prisma from '../lib/prisma';
+import { hashPassword } from '../lib/auth';
+import { encryptSession } from '../lib/session';
+import '../styles/global.css';
+
+let errorMessage = '';
+let successMessage = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const nome = formData.get('nome')?.toString().trim();
+    const email = formData.get('email')?.toString().trim().toLowerCase();
+    const password = formData.get('password')?.toString() || '';
+
+    if (!nome || !email || !password) {
+      errorMessage = 'Por favor, preencha todos os campos.';
+    } else if (password.length < 6) {
+      errorMessage = 'A senha deve ter no mínimo 6 caracteres.';
+    } else {
+      // Verifica se o email já existe
+      const existingUser = await prisma.usuario.findUnique({
+        where: { email }
+      });
+
+      if (existingUser) {
+        errorMessage = 'Este e-mail já está sendo utilizado.';
+      } else {
+        const hashedPassword = hashPassword(password);
+        
+        const user = await prisma.usuario.create({
+          data: {
+            nome,
+            email,
+            senha_hash: hashedPassword,
+            ativo: true
+          }
+        });
+
+        // Cria a sessão automática para o novo usuário
+        const sessionToken = encryptSession({
+          id: user.id,
+          email: user.email,
+          nome: user.nome
+        });
+
+        Astro.cookies.set('session', sessionToken, {
+          path: '/',
+          httpOnly: true,
+          secure: true,
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7 // 7 dias
+        });
+
+        return Astro.redirect('/dashboard');
+      }
+    }
+  } catch (error: any) {
+    errorMessage = `Erro ao criar conta: ${error.message}`;
+  }
+}
+---
+
+<!doctype html>
+<html lang="pt-br" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="EditalHub - Crie sua Conta Grátis" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Criar Conta Grátis | EditalHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#070708] text-gray-100 font-inter min-h-screen flex items-center justify-center relative overflow-hidden">
+    
+    <!-- Efeitos decorativos em degrade de fundo (Glow Premium) -->
+    <div class="absolute top-[-25%] right-[-10%] w-[55%] h-[55%] rounded-full bg-blue-900/10 blur-[150px] -z-10"></div>
+    <div class="absolute bottom-[-25%] left-[-10%] w-[55%] h-[55%] rounded-full bg-indigo-900/10 blur-[150px] -z-10"></div>
+
+    <div class="w-full max-w-md px-6 py-10">
+      <!-- Cabeçalho de Logo -->
+      <div class="text-center mb-8">
+        <a href="/" class="text-4xl font-outfit font-extrabold bg-gradient-to-r from-blue-400 via-indigo-400 to-indigo-600 bg-clip-text text-transparent tracking-tight">
+          EditalHub
+        </a>
+        <p class="text-xs text-gray-400 uppercase tracking-widest mt-2 font-medium">Recomendações Inteligentes de Concursos</p>
+      </div>
+
+      <!-- Card de Cadastro Glassmorphism -->
+      <div class="bg-[#0c0c0e]/60 backdrop-blur-xl border border-white/5 p-8 rounded-3xl shadow-2xl shadow-black/40">
+        <h2 class="text-xl font-outfit font-bold text-white mb-1">Crie sua conta grátis</h2>
+        <p class="text-xs text-gray-400 mb-6">Desbloqueie todos os concursos compatíveis e receba alertas.</p>
+
+        <!-- Banner de Mensagem de Erro -->
+        {errorMessage && (
+          <div class="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3.5 rounded-2xl mb-6 font-medium flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        <!-- Formulário -->
+        <form method="POST" class="space-y-4">
+          <div>
+            <label for="nome" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nome Completo</label>
+            <input 
+              type="text" 
+              name="nome" 
+              id="nome" 
+              required 
+              placeholder="Seu nome"
+              class="w-full bg-[#111113] border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all font-medium"
+            />
+          </div>
+
+          <div>
+            <label for="email" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">E-mail</label>
+            <input 
+              type="email" 
+              name="email" 
+              id="email" 
+              required 
+              placeholder="exemplo@email.com"
+              class="w-full bg-[#111113] border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all font-medium"
+            />
+          </div>
+
+          <div>
+            <label for="password" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Senha</label>
+            <input 
+              type="password" 
+              name="password" 
+              id="password" 
+              required 
+              placeholder="Mínimo 6 caracteres"
+              class="w-full bg-[#111113] border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all font-medium"
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98] mt-2 cursor-pointer flex items-center justify-center gap-2"
+          >
+            Começar Agora
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </button>
+        </form>
+
+        <div class="mt-6 text-center">
+          <p class="text-xs text-gray-400">
+            Já possui uma conta? 
+            <a href="/login" class="text-blue-400 hover:underline font-semibold ml-1">Fazer Login</a>
+          </p>
+        </div>
+      </div>
+
+      <p class="text-center text-xs text-gray-600 mt-8">
+        &copy; {new Date().getFullYear()} EditalHub. Todos os direitos reservados.
+      </p>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  .font-outfit { font-family: 'Outfit', sans-serif; }
+  .font-inter { font-family: 'Inter', sans-serif; }
+</style>

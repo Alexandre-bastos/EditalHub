@@ -2,7 +2,7 @@ import { defineMiddleware } from 'astro:middleware';
 import { decryptSession } from './lib/session';
 
 // Rotas do painel que requerem proteção de login
-const PROTECTED_PREFIXES = ['/editais', '/concursos', '/organizadoras', '/usuarios'];
+const PROTECTED_PREFIXES = ['/dashboard', '/editais', '/concursos', '/organizadoras', '/usuarios'];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url, cookies, redirect, locals } = context;
@@ -16,7 +16,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   locals.user = user;
 
   // 2. Determina se o caminho atual requer login
-  const isDashboardRoute = path === '/' || PROTECTED_PREFIXES.some(prefix => path.startsWith(prefix));
+  const isDashboardRoute = PROTECTED_PREFIXES.some(prefix => path === prefix || path.startsWith(prefix + '/'));
 
   if (isDashboardRoute) {
     if (!user) {
@@ -28,7 +28,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // 3. Se for a tela de login e o usuário já estiver logado, redireciona direto para o painel
   if (path === '/login' && user) {
-    return redirect('/');
+    return redirect('/dashboard');
   }
 
   return next();

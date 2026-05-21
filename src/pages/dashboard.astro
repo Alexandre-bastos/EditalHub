@@ -1,0 +1,134 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import prisma from '../lib/prisma';
+
+let totalOrganizadoras = 0;
+let totalEditais = 0;
+let editaisPendentes = 0;
+let ultimosEditais = [];
+let errorMsg = null;
+
+try {
+  totalOrganizadoras = await prisma.organizadora.count({ where: { ativo: true } });
+  
+  const allValidEditais = await prisma.edital.findMany({
+    where: { is_valido: true },
+    orderBy: { data_download: 'desc' },
+    include: { organizadora: true, concursos: true }
+  });
+  
+  const hoje = new Date();
+  const vigentes = allValidEditais.filter(edital => {
+    if (edital.concursos && edital.concursos.length > 0) {
+      const concurso = edital.concursos[0];
+      if (concurso.inscricao_fim) {
+        const dataFim = new Date(concurso.inscricao_fim);
+        dataFim.setHours(23, 59, 59, 999);
+        if (dataFim < hoje) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
+  
+  totalEditais = vigentes.length;
+  
+  editaisPendentes = await prisma.edital.count({ 
+    where: { 
+      status_processamento: 'pendente',
+      is_valido: true 
+    } 
+  });
+  
+  // Para exibir apenas os últimos coletados que ainda estão vigentes ou pendentes
+  ultimosEditais = vigentes.slice(0, 5);
+} catch (err) {
+  console.error('Erro ao carregar Dashboard:', err);
+  errorMsg = err instanceof Error ? err.message : String(err);
+}
+---
+
+<DashboardLayout title="Geral">
+  {errorMsg && (
+    <div class="glass-card p-6 border-red-500/50 bg-red-500/10 mb-8">
+      <h3 class="text-red-500 font-bold mb-2">Erro de Conexão com o Banco</h3>
+      <p class="text-sm text-gray-400 font-mono">{errorMsg}</p>
+    </div>
+  )}
+
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="glass-card p-6 flex flex-col gap-2">
+      <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Bancas Ativas</span>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-outfit font-bold">{totalOrganizadoras}</span>
+      </div>
+    </div>
+    <div class="glass-card p-6 flex flex-col gap-2">
+      <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Editais Válidos</span>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-outfit font-bold">{totalEditais}</span>
+      </div>
+    </div>
+    <div class="glass-card p-6 flex flex-col gap-2 border-amber-500/20">
+      <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Aguardando IA</span>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-outfit font-bold text-amber-400">{editaisPendentes}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card overflow-hidden">
+    <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+      <h3 class="font-outfit font-semibold text-sm">Últimos Editais Coletados</h3>
+      <a href="/editais" class="text-[10px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider">Ver todos</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="text-[10px] text-gray-500 uppercase tracking-widest bg-white/[0.02]">
+            <th class="px-6 py-4 font-medium">Banca</th>
+            <th class="px-6 py-4 font-medium">Concurso / Órgão</th>
+            <th class="px-6 py-4 font-medium">Data Coleta</th>
+            <th class="px-6 py-4 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          {ultimosEditais.map(edital => (
+            <tr class="hover:bg-white/[0.01] transition-colors group">
+              <td class="px-6 py-4">
+                <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[9px] font-bold rounded uppercase border border-blue-500/20">
+                  {edital.organizadora.nome}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                {edital.status_processamento === 'processado' ? (
+                  <a href={`/concursos/${edital.concursos[0]?.id}`} class="text-sm font-medium hover:text-blue-400 transition-colors truncate max-w-md block">
+                    {edital.nome_edital}
+                  </a>
+                ) : (
+                  <p class="text-sm font-medium truncate max-w-md">{edital.nome_edital}</p>
+                )}
+              </td>
+              <td class="px-6 py-4 text-xs text-gray-400 font-mono">
+                {edital.data_download ? new Date(edital.data_download).toLocaleDateString('pt-BR') : '-'}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                   <span class={`w-1 h-1 rounded-full ${
+                    edital.status_processamento === 'pendente' ? 'bg-amber-500' : 'bg-green-500'
+                  }`}></span>
+                  <span class={`text-[9px] font-bold rounded uppercase ${
+                    edital.status_processamento === 'pendente' ? 'text-amber-500' : 'text-green-500'
+                  }`}>
+                    {edital.status_processamento}
+                  </span>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</DashboardLayout>
