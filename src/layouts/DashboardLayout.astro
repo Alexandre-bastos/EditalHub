@@ -181,6 +181,32 @@ const userInitials = userName
       </div>
     </div>
 
+    <!-- Sync Error Modal (Premium Glassmorphism Overlay) -->
+    <div id="sync-error-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+      <div class="bg-[#0f0f13]/90 border border-red-500/20 rounded-2xl p-6 max-w-md w-full mx-4 shadow-[0_0_30px_rgba(239,68,68,0.15)] transform scale-95 transition-all duration-300">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-red-500/10 rounded-xl text-red-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <h3 class="text-lg font-outfit font-bold text-white">Falha na Sincronização</h3>
+        </div>
+        
+        <p class="text-sm text-gray-400 mb-4 leading-relaxed">
+          Ocorreu um erro crítico durante o processo. A operação foi interrompida com segurança. Detalhes técnicos do erro:
+        </p>
+        
+        <div class="bg-red-500/[0.03] border border-red-500/10 rounded-xl p-4 mb-6">
+          <p id="sync-error-details" class="text-xs text-red-400 font-mono leading-relaxed break-words whitespace-pre-wrap select-all">
+            Nenhum detalhe adicional fornecido.
+          </p>
+        </div>
+        
+        <button id="close-error-btn" class="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-600/20 active:scale-[0.98]">
+          Recarregar Painel
+        </button>
+      </div>
+    </div>
+
     <script>
       let isPollerActive = false;
       let pollerIntervalId: any = null;
@@ -233,11 +259,11 @@ const userInitials = userName
         widget.classList.add('translate-y-0', 'opacity-100');
         
         // Estilos padrão de atividade (azul)
-        widget.classList.remove('border-green-500/30');
+        widget.classList.remove('border-green-500/30', 'border-red-500/30');
         widget.classList.add('border-blue-500/20');
 
         if (widgetProgress) {
-          widgetProgress.classList.remove('bg-emerald-500', 'w-full');
+          widgetProgress.classList.remove('bg-emerald-500', 'bg-red-500', 'w-full');
           widgetProgress.classList.add('bg-gradient-to-r', 'from-blue-500', 'to-indigo-600', 'animate-pulse');
           if (stage === 'scraping') {
             widgetProgress.style.width = '30%';
@@ -252,7 +278,7 @@ const userInitials = userName
 
         if (widgetTitle) {
           widgetTitle.innerText = stage === 'scraping' ? 'Buscando Editais' : 'Processamento IA';
-          widgetTitle.classList.remove('text-green-400');
+          widgetTitle.classList.remove('text-green-400', 'text-red-400');
           widgetTitle.classList.add('text-white');
         }
 
@@ -276,7 +302,7 @@ const userInitials = userName
 
         if (widgetTitle) {
           widgetTitle.innerText = 'Sincronizado!';
-          widgetTitle.classList.remove('text-white');
+          widgetTitle.classList.remove('text-white', 'text-red-400');
           widgetTitle.classList.add('text-green-400');
         }
 
@@ -285,12 +311,12 @@ const userInitials = userName
         }
 
         if (widgetProgress) {
-          widgetProgress.classList.remove('from-blue-500', 'to-indigo-600', 'animate-pulse');
+          widgetProgress.classList.remove('from-blue-500', 'to-indigo-600', 'animate-pulse', 'bg-red-500');
           widgetProgress.classList.add('bg-emerald-500');
           widgetProgress.style.width = '100%';
         }
 
-        widget.classList.remove('border-blue-500/20');
+        widget.classList.remove('border-blue-500/20', 'border-red-500/30');
         widget.classList.add('border-green-500/30');
 
         // Preenche os dados no modal
@@ -309,6 +335,57 @@ const userInitials = userName
         }
 
         // Abre o modal com uma animação de fade e escala suave
+        setTimeout(() => {
+          if (modal && modalContent) {
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+          }
+        }, 1000);
+      }
+
+      function showWidgetError(errorMessage: string) {
+        if (!widget) return;
+
+        if (widgetIcon) {
+          widgetIcon.innerHTML = `
+            <svg class="text-red-400 w-5 h-5 animate-bounce" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          `;
+        }
+
+        if (widgetTitle) {
+          widgetTitle.innerText = 'Falha no Sync!';
+          widgetTitle.classList.remove('text-white', 'text-green-400');
+          widgetTitle.classList.add('text-red-400');
+        }
+
+        if (widgetMessage) {
+          widgetMessage.innerText = 'A sincronização foi interrompida.';
+        }
+
+        if (widgetProgress) {
+          widgetProgress.classList.remove('from-blue-500', 'to-indigo-600', 'animate-pulse', 'bg-emerald-500');
+          widgetProgress.classList.add('bg-red-500');
+          widgetProgress.style.width = '100%';
+        }
+
+        widget.classList.remove('border-blue-500/20', 'border-green-500/30');
+        widget.classList.add('border-red-500/30');
+
+        // Preenche os dados no modal de erro
+        const modal = document.getElementById('sync-error-modal');
+        const modalContent = modal?.querySelector('div');
+        const detailsEl = document.getElementById('sync-error-details');
+
+        if (detailsEl) {
+          detailsEl.innerText = errorMessage || 'Nenhum detalhe adicional disponível.';
+        }
+
+        // Abre o modal de erro com uma animação de fade e escala suave
         setTimeout(() => {
           if (modal && modalContent) {
             modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -337,10 +414,14 @@ const userInitials = userName
             showWidget(data.stage, data.message);
           } else {
             if (lastActiveState) {
-              // Mudou de ativo para inativo agora: sucesso!
+              // Mudou de ativo para inativo agora: sucesso ou erro!
               lastActiveState = false;
               if (pollerIntervalId) clearInterval(pollerIntervalId);
-              showWidgetSuccess(data.summary);
+              if (data.error) {
+                showWidgetError(data.error);
+              } else {
+                showWidgetSuccess(data.summary);
+              }
             } else {
               hideWidget();
             }
@@ -378,12 +459,20 @@ const userInitials = userName
             // Inicia imediatamente o poller para dar feedback ao usuário
             startPoller();
           } else {
-            alert('Falha ao disparar sincronização na Azure');
+            let errorText = 'Falha ao disparar sincronização na Azure';
+            try {
+              const data = await res.json();
+              if (data.error) {
+                errorText = data.error;
+              }
+            } catch (e) {}
+            
+            showWidgetError(errorText);
             runBtn.removeAttribute('disabled');
             runBtn.innerHTML = originalHtml;
           }
         } catch (err) {
-          alert('Erro de rede ao iniciar sincronização');
+          showWidgetError(err instanceof Error ? err.message : 'Erro de rede ao iniciar sincronização');
           runBtn.removeAttribute('disabled');
           runBtn.innerHTML = originalHtml;
         }
@@ -401,12 +490,20 @@ const userInitials = userName
             // Inicia imediatamente o poller
             startPoller();
           } else {
-            alert('Falha ao iniciar processamento na Azure');
+            let errorText = 'Falha ao iniciar processamento na Azure';
+            try {
+              const data = await res.json();
+              if (data.error) {
+                errorText = data.error;
+              }
+            } catch (e) {}
+            
+            showWidgetError(errorText);
             processBtn.removeAttribute('disabled');
             processBtn.innerHTML = originalHtml;
           }
         } catch (err) {
-          alert('Erro de rede ao iniciar processamento');
+          showWidgetError(err instanceof Error ? err.message : 'Erro de rede ao iniciar processamento');
           processBtn.removeAttribute('disabled');
           processBtn.innerHTML = originalHtml;
         }
@@ -425,6 +522,21 @@ const userInitials = userName
         }
         
         // Recarrega a página para atualizar toda a lista e os novos editais e badges
+        window.location.reload();
+      });
+
+      // Ouvinte para o botão "Recarregar Painel" no modal de erro
+      const closeErrorBtn = document.getElementById('close-error-btn');
+      closeErrorBtn?.addEventListener('click', () => {
+        const modal = document.getElementById('sync-error-modal');
+        const modalContent = modal?.querySelector('div');
+        
+        if (modal && modalContent) {
+          modalContent.classList.remove('scale-100');
+          modalContent.classList.add('scale-95');
+          modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+        
         window.location.reload();
       });
 

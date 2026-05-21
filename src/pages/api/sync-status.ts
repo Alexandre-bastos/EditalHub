@@ -25,11 +25,22 @@ export const GET: APIRoute = async () => {
     let message = 'Nenhuma sincronização ativa no momento.';
     let active = false;
     let summary: any = null;
+    let errorDetails: string | null = null;
 
     if (lastSyncLog) {
       const now = new Date();
       const diffMs = now.getTime() - new Date(lastSyncLog.data_criacao).getTime();
       const diffMinutes = diffMs / (1000 * 60);
+
+      // Busca se há um log de erro após o início deste sync
+      const errorLog = await prisma.logAuditoria.findFirst({
+        where: {
+          acao: 'sincronizacao_erro',
+          data_criacao: {
+            gte: lastSyncLog.data_criacao
+          }
+        }
+      });
 
       // Busca se há um log de conclusão após o início deste sync
       const completionLog = await prisma.logAuditoria.findFirst({
@@ -41,7 +52,13 @@ export const GET: APIRoute = async () => {
         }
       });
 
-      if (completionLog) {
+      if (errorLog) {
+        // Se houve erro posterior à data de início, marcamos como inativo e extraímos o erro
+        active = false;
+        stage = 'idle';
+        message = 'A sincronização falhou.';
+        errorDetails = errorLog.detalhes;
+      } else if (completionLog) {
         // Se já existe log de finalização posterior à data de início, o sync concluiu!
         active = false;
         stage = 'idle';
@@ -81,9 +98,9 @@ export const GET: APIRoute = async () => {
       };
     }
 
-    // Caso o status_processamento ainda acuse pendentes mas não haja log de sync recente,
+    // Caso o status_processamento ainda acuse pendentes mas não haja log de sync recente nem erro,
     // ainda consideramos ativo no processamento de IA
-    if (!active && pendingCount > 0) {
+    if (!active && pendingCount > 0 && !errorDetails) {
       active = true;
       stage = 'processing';
       message = `Processando ${pendingCount} edital(ais) com Inteligência Artificial pendentes...`;
@@ -95,6 +112,7 @@ export const GET: APIRoute = async () => {
       pendingCount,
       message,
       summary,
+      error: errorDetails,
       timestamp: new Date().toISOString()
     }), {
       status: 200,

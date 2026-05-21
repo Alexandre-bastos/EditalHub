@@ -60,61 +60,79 @@ export async function scrapeAll(organizadoraId?: string) {
   
   const organizadoras = await prisma.organizadora.findMany({ where: whereClause });
   
-  const browser = await chromium.launch({ headless: true });
+  let browser: Browser | null = null;
+  
+  const getBrowser = async (): Promise<Browser> => {
+    if (!browser) {
+      console.log('Inicializando navegador Chromium (Playwright)...');
+      browser = await chromium.launch({ headless: true });
+    }
+    return browser;
+  };
   
   try {
     for (const org of organizadoras) {
       const nome = org.nome.toLowerCase();
       try {
         if (nome.includes('fgv')) {
-          await internalScrapeFgv(browser, org);
+          await internalScrapeFgv(org);
         } else if (nome.includes('vunesp')) {
-          await internalScrapeVunesp(browser, org);
+          const b = await getBrowser();
+          await internalScrapeVunesp(b, org);
         } else if (nome.includes('cebraspe')) {
-          await internalScrapeCebraspe(browser, org);
+          await internalScrapeCebraspe(org);
         } else if (nome.includes('chagas') || nome.includes('fcc')) {
-          await internalScrapeFCC(browser, org);
+          await internalScrapeFCC(org);
         } else if (nome.includes('cesgranrio')) {
-          await internalScrapeCesgranrio(browser, org);
+          const b = await getBrowser();
+          await internalScrapeCesgranrio(b, org);
         } else {
           console.log(`Banca ${org.nome} ainda não possui scraper específico. Pulando...`);
         }
       } catch (err: any) {
         console.error(`Erro ao processar banca ${org.nome}:`, err.message);
+        if (organizadoraId) {
+          throw new Error(`Falha ao sincronizar a banca "${org.nome}": ${err.message}`);
+        }
       }
     }
   } finally {
-    await browser.close();
+    if (browser) {
+      console.log('Fechando navegador Chromium...');
+      await browser.close();
+    }
     console.log('\n--- Coleta Multi-Banca Finalizada ---');
   }
 }
 
-async function internalScrapeFgv(browser: Browser, org: any) {
-  console.log(`\n> Coletando FGV: ${org.site_url}`);
-  const page = await browser.newPage();
-  try {
-    await page.goto(org.site_url, { waitUntil: 'networkidle', timeout: 60000 });
-    const content = await page.content();
-    const $ = cheerio.load(content);
-    
-    const items: any[] = [];
-    $('.views-row').each((i, el) => {
-      const nome = $(el).find('.views-field-title a').text().trim();
-      const link = 'https://conhecimento.fgv.br' + $(el).find('.views-field-title a').attr('href');
-      if (nome && link) items.push({ nome, link });
-    });
+async function internalScrapeFgv(org: any) {
+  console.log(`\n> Coletando FGV (via HTTP): ${org.site_url}`);
+  const res = await axios.get(org.site_url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    },
+    timeout: 30000
+  });
+  const $ = cheerio.load(res.data);
+  
+  const items: any[] = [];
+  $('.views-row').each((i, el) => {
+    const nome = $(el).find('.views-field-title a').text().trim();
+    const hrefAttr = $(el).find('.views-field-title a').attr('href');
+    const link = hrefAttr ? 'https://conhecimento.fgv.br' + hrefAttr : '';
+    if (nome && link) items.push({ nome, link });
+  });
 
-    for (const item of items) {
-      await processGenericContest(page, org, item.nome, item.link, async ($c) => {
-        const editalLinkEl = $c('a').filter((i, el) => {
-          const text = $c(el).text().toLowerCase();
-          return text.includes('edital') && (text.includes('abertura') || text.includes('retificado')) && !EXCLUDE_KEYWORDS.some(k => text.includes(k) && k !== 'retificado');
-        }).first();
-        return editalLinkEl.length > 0 ? resolveUrl(editalLinkEl.attr('href'), 'https://conhecimento.fgv.br') : null;
-      });
-    }
-  } finally {
-    await page.close();
+  for (const item of items) {
+    await processGenericContest({ isAxios: true }, org, item.nome, item.link, async ($c) => {
+      const editalLinkEl = $c('a').filter((i, el) => {
+        const text = $c(el).text().toLowerCase();
+        const matchesEdital = text.includes('edital');
+        const hasAberturaOuRetificado = text.includes('abertura') || text.includes('retificado') || text.trim() === 'edital';
+        return matchesEdital && hasAberturaOuRetificado && !EXCLUDE_KEYWORDS.some(k => text.includes(k) && k !== 'retificado');
+      }).first();
+      return editalLinkEl.length > 0 ? resolveUrl(editalLinkEl.attr('href'), 'https://conhecimento.fgv.br') : null;
+    });
   }
 }
 
@@ -136,7 +154,7 @@ async function internalScrapeVunesp(browser: Browser, org: any) {
     });
 
     for (const item of items) {
-      await processGenericContest(page, org, item.nome, item.link, async ($c, p) => {
+      await processGenericContest({ page }, org, item.nome, item.link, async ($c, p) => {
         await p.click('a:has-text("Editais e Documentos")', { timeout: 3000 }).catch(() => {});
         await p.waitForTimeout(1000);
         const $u = cheerio.load(await p.content());
@@ -152,70 +170,69 @@ async function internalScrapeVunesp(browser: Browser, org: any) {
   }
 }
 
-async function internalScrapeCebraspe(browser: Browser, org: any) {
-  console.log(`\n> Coletando Cebraspe: ${org.site_url}`);
-  const page = await browser.newPage();
-  try {
-    await page.goto(org.site_url, { waitUntil: 'networkidle', timeout: 60000 });
-    const $ = cheerio.load(await page.content());
-    const items: any[] = [];
-    
-    $('a[href*="/concursos/"]').each((i, el) => {
-      const nome = $(el).text().trim();
-      const href = $(el).attr('href');
-      if (nome && href && nome.length > 10) items.push({ nome, link: resolveUrl(href, 'https://www.cebraspe.org.br') });
-    });
+async function internalScrapeCebraspe(org: any) {
+  console.log(`\n> Coletando Cebraspe (via HTTP): ${org.site_url}`);
+  const res = await axios.get(org.site_url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    },
+    timeout: 30000
+  });
+  const $ = cheerio.load(res.data);
+  const items: any[] = [];
+  
+  $('a[href*="/concursos/"]').each((i, el) => {
+    const nome = $(el).text().trim();
+    const href = $(el).attr('href');
+    if (nome && href && nome.length > 10) items.push({ nome, link: resolveUrl(href, 'https://www.cebraspe.org.br') });
+  });
 
-    for (const item of items) {
-      await processGenericContest(page, org, item.nome, item.link, async ($c) => {
-        const link = $c('a').filter((i, el) => {
-          const t = $c(el).text().toLowerCase();
-          return ((t.includes('edital') && t.includes('abertura')) || t.includes('edital nº 1')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
-        }).first();
-        return link.length > 0 ? resolveUrl(link.attr('href'), 'https://www.cebraspe.org.br') : null;
-      });
-    }
-  } finally {
-    await page.close();
+  for (const item of items) {
+    await processGenericContest({ isAxios: true }, org, item.nome, item.link, async ($c) => {
+      const link = $c('a').filter((i, el) => {
+        const t = $c(el).text().toLowerCase();
+        return ((t.includes('edital') && t.includes('abertura')) || t.includes('edital nº 1')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
+      }).first();
+      return link.length > 0 ? resolveUrl(link.attr('href'), 'https://www.cebraspe.org.br') : null;
+    });
   }
 }
 
-async function internalScrapeFCC(browser: Browser, org: any) {
-  console.log(`\n> Coletando FCC: ${org.site_url}`);
-  const page = await browser.newPage();
-  try {
-    await page.goto(org.site_url, { waitUntil: 'networkidle', timeout: 60000 });
-    const $ = cheerio.load(await page.content());
-    const items: any[] = [];
-    
-    $('a[href*="concursos/"]').each((i, el) => {
-      const nome = $(el).text().trim();
-      const href = $(el).attr('href');
-      if (nome && href) items.push({ nome, link: resolveUrl(href, 'https://www.concursosfcc.com.br') });
-    });
+async function internalScrapeFCC(org: any) {
+  console.log(`\n> Coletando FCC (via HTTP): ${org.site_url}`);
+  const res = await axios.get(org.site_url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    },
+    timeout: 30000
+  });
+  const $ = cheerio.load(res.data);
+  const items: any[] = [];
+  
+  $('a[href*="concursos/"]').each((i, el) => {
+    const nome = $(el).text().trim();
+    const href = $(el).attr('href');
+    if (nome && href) items.push({ nome, link: resolveUrl(href, 'https://www.concursosfcc.com.br') });
+  });
 
-    for (const item of items) {
-      await processGenericContest(page, org, item.nome, item.link, async ($c) => {
-        const linkEl = $c('a').filter((i, el) => {
-          const t = $c(el).text().toLowerCase();
-          const h = $c(el).attr('href') || '';
-          return (t.includes('edital') || t.includes('abertura')) && (h.includes('.pdf') || h.includes('rybena')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
-        }).first();
+  for (const item of items) {
+    await processGenericContest({ isAxios: true }, org, item.nome, item.link, async ($c) => {
+      const linkEl = $c('a').filter((i, el) => {
+        const t = $c(el).text().toLowerCase();
+        const h = $c(el).attr('href') || '';
+        return (t.includes('edital') || t.includes('abertura')) && (h.includes('.pdf') || h.includes('rybena')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
+      }).first();
 
-        if (linkEl.length > 0) {
-          let href = linkEl.attr('href') || '';
-          // Limpeza de links Rybena (FCC usa um visualizador que não é PDF direto)
-          if (href.includes('rybena') && href.includes('file=')) {
-            href = href.split('file=')[1];
-            if (href.includes('&')) href = href.split('&')[0];
-          }
-          return resolveUrl(href, 'https://www.concursosfcc.com.br');
+      if (linkEl.length > 0) {
+        let href = linkEl.attr('href') || '';
+        if (href.includes('rybena') && href.includes('file=')) {
+          href = href.split('file=')[1];
+          if (href.includes('&')) href = href.split('&')[0];
         }
-        return null;
-      });
-    }
-  } finally {
-    await page.close();
+        return resolveUrl(href, 'https://www.concursosfcc.com.br');
+      }
+      return null;
+    });
   }
 }
 
@@ -234,7 +251,7 @@ async function internalScrapeCesgranrio(browser: Browser, org: any) {
     });
 
     for (const item of items) {
-      await processGenericContest(page, org, item.nome, item.link, async ($c, p) => {
+      await processGenericContest({ page }, org, item.nome, item.link, async ($c, p) => {
         const portalLink = $c('a[href*="portal"]').first().attr('href');
         if (portalLink) {
           await p.goto(portalLink, { waitUntil: 'networkidle' });
@@ -254,7 +271,13 @@ async function internalScrapeCesgranrio(browser: Browser, org: any) {
   }
 }
 
-async function processGenericContest(page: any, org: any, nome: string, link: string, findEditalUrl: ($c: any, p: any) => Promise<string | null>) {
+async function processGenericContest(
+  client: { page?: any; isAxios?: boolean },
+  org: any,
+  nome: string,
+  link: string,
+  findEditalUrl: ($c: any, p?: any) => Promise<string | null>
+) {
   console.log(`  [${new Date().toLocaleTimeString()}] Analisando: ${nome.substring(0, 60)}...`);
   
   const alreadyHas = await prisma.edital.findFirst({ where: { nome_edital: nome } });
@@ -264,14 +287,25 @@ async function processGenericContest(page: any, org: any, nome: string, link: st
   }
 
   try {
-    await page.goto(link, { waitUntil: 'networkidle', timeout: 30000 });
-    const html = await page.content();
+    let html: string;
+    if (client.page) {
+      await client.page.goto(link, { waitUntil: 'networkidle', timeout: 30000 });
+      html = await client.page.content();
+    } else {
+      const res = await axios.get(link, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        },
+        timeout: 30000
+      });
+      html = res.data;
+    }
     const $c = cheerio.load(html);
     
     const nomeLower = nome.toLowerCase();
     let isValid = !EXCLUDE_KEYWORDS.some(k => nomeLower.includes(k));
     
-    const editalUrl = await findEditalUrl($c, page);
+    const editalUrl = await findEditalUrl($c, client.page);
 
     if (!editalUrl) {
       isValid = false;
@@ -307,7 +341,6 @@ async function uploadEditalToAzure(url: string, org: string, editalId: string) {
   try {
     const response = await axios({ url, method: 'GET', responseType: 'arraybuffer', timeout: 30000 });
     
-    // Verificação básica se é PDF (Axios deve retornar application/pdf ou o buffer deve começar com %PDF)
     const buffer = Buffer.from(response.data);
     if (!buffer.toString('utf-8', 0, 4).includes('%PDF')) {
       console.error(`    > ALERTA: O arquivo baixado de ${url} não parece ser um PDF válido.`);
@@ -332,8 +365,6 @@ function resolveUrl(href: string | undefined, base: string): string {
 }
 
 export const scrapeFgv = async () => {
-  const browser = await chromium.launch();
   const fgv = await prisma.organizadora.findFirst({ where: { nome: { contains: 'FGV' } } });
-  if (fgv) await internalScrapeFgv(browser, fgv);
-  await browser.close();
+  if (fgv) await internalScrapeFgv(fgv);
 };
