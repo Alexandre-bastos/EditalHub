@@ -14,7 +14,7 @@ export class GeminiService {
       console.warn('GEMINI_API_KEY is not defined. AI features will be disabled.');
     }
     this.model = genAI.getGenerativeModel({ 
-      model: 'models/gemini-2.5-flash',
+      model: 'models/gemini-flash-latest',
       generationConfig: {
         responseMimeType: 'application/json',
       }

@@ -105,7 +105,64 @@ export async function processEdital(editalId: string) {
     // 3. Validação dos Requisitos de Entrada
     const validation = meetsEntryRequirements(analysis);
     if (!validation.valid) {
-      console.log(`Edital não atende aos requisitos de entrada: ${validation.reason}. Descartando...`);
+      const dataFim = parseRobustDate(analysis.inscricao_fim);
+      const hoje = new Date();
+      const isExpired = dataFim && dataFim < hoje;
+
+      if (isExpired) {
+        console.log(`Edital fora de vigência (inscrições encerradas em ${analysis.inscricao_fim}). Arquivando como não-visível (is_valido = false) e marcando como processado...`);
+
+        const fullText = "Texto extraído via Gemini Vision/Multimodal";
+
+        // 1. Criar concurso mesmo vencido para registro histórico
+        const concurso = await prisma.concurso.create({
+          data: {
+            edital_id: edital.id,
+            nome_concurso: analysis.nome_concurso || edital.nome_edital,
+            estado: analysis.estado,
+            escolaridade: analysis.escolaridade,
+            formacao: analysis.formacao,
+            profissao: analysis.profissao,
+            taxa_inscricao: analysis.taxa_inscricao,
+            salario_inicial: analysis.salario_inicial,
+            idade_minima: analysis.idade_minima,
+            idade_maxima: analysis.idade_maxima,
+            link_inscricao: analysis.link_inscricao,
+            resumo: analysis.resumo,
+            inscricao_inicio: parseRobustDate(analysis.inscricao_inicio),
+            inscricao_fim: dataFim,
+            data_prova: parseRobustDate(analysis.data_prova),
+            cargos: {
+              create: (analysis.cargos || []).map((v: any) => ({
+                nome_cargo: v.nome_cargo,
+                escolaridade: v.escolaridade,
+                salario: v.salario,
+                quantidade: v.quantidade,
+                requisitos: v.requisitos
+              }))
+            }
+          }
+        });
+
+        // 2. Atualizar o edital para status 'processado' e is_valido = false para não ficar visível
+        await prisma.edital.update({
+          where: { id: edital.id },
+          data: {
+            status_processamento: 'processado',
+            is_valido: false,
+            texto_extraido: fullText.substring(0, 50000),
+            erro_mensagem: null
+          }
+        });
+
+        // 3. Excluir o PDF físico no Azure Blob Storage para poupar espaço
+        await azureStorage.deleteBlob(edital.nome_arquivo);
+
+        console.log(`Edital ${editalId} processado e arquivado com sucesso como não-visível.`);
+        return concurso;
+      }
+
+      console.log(`Edital não atende aos requisitos estruturais: ${validation.reason}. Descartando...`);
 
       // 1. Registrar na tabela de editais descartados
       await prisma.editalDescartado.create({
