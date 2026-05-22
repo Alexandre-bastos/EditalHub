@@ -235,7 +235,7 @@ export const HomeContestMap: React.FC<Props> = ({ contests }) => {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white rounded-[2.5rem] p-4 lg:p-6 shadow-2xl border border-slate-100 max-w-7xl mx-auto min-h-[640px]">
       
       {/* 1. Sidebar Panel (5 columns) */}
-      <div className="lg:col-span-5 flex flex-col h-[550px] lg:h-[650px] pr-1">
+      <div className="lg:col-span-5 flex flex-col h-[450px] lg:h-[650px] pr-1">
         
         {/* Filter controls */}
         <div className="space-y-4 pb-4 border-b border-slate-100 text-left">

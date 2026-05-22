@@ -351,7 +351,7 @@ const user = Astro.locals.user;
 
     <!-- Floating Elegant Header in White -->
     <header class="w-full border-b border-slate-200/50 bg-white/80 backdrop-blur-xl sticky top-0 z-40 transition-all duration-300">
-      <div class="max-w-7xl mx-auto px-8 py-4.5 flex justify-between items-center">
+      <div class="max-w-7xl mx-auto px-4 sm:px-8 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
           <!-- Logo com Glow Suave -->
           <div class="relative group">
@@ -362,10 +362,10 @@ const user = Astro.locals.user;
               </span>
             </div>
           </div>
-          <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded border border-indigo-100 uppercase tracking-widest font-mono">AI Engine</span>
+          <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded border border-indigo-100 uppercase tracking-widest font-mono hidden xs:inline-block">AI Engine</span>
         </div>
         
-        <nav class="flex items-center gap-8">
+        <nav class="hidden md:flex items-center gap-8">
           <a href="#simulator" class="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors relative after:absolute after:bottom-[-6px] after:left-0 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all after:duration-300">Simulador</a>
           <a href="#how-it-works" class="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors relative after:absolute after:bottom-[-6px] after:left-0 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all after:duration-300">Como Funciona</a>
           <a href="#salaries" class="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors relative after:absolute after:bottom-[-6px] after:left-0 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all after:duration-300">Salários</a>
@@ -390,10 +390,43 @@ const user = Astro.locals.user;
             </div>
           )}
         </nav>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button id="mobile-menu-toggle" class="flex md:hidden p-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all focus:outline-none" aria-label="Toggle Menu">
+          <svg id="menu-icon-hamburger" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          <svg id="menu-icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Mobile Dropdown Panel -->
+      <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white/95 backdrop-blur-xl absolute top-full left-0 w-full shadow-lg flex-col px-6 py-6 gap-5 z-50">
+        <a href="#simulator" class="mobile-nav-link text-sm font-semibold text-slate-600 hover:text-indigo-650 transition-colors py-2 border-b border-slate-50">Simulador</a>
+        <a href="#how-it-works" class="mobile-nav-link text-sm font-semibold text-slate-600 hover:text-indigo-650 transition-colors py-2 border-b border-slate-50">Como Funciona</a>
+        <a href="#salaries" class="mobile-nav-link text-sm font-semibold text-slate-600 hover:text-indigo-650 transition-colors py-2 border-b border-slate-50">Salários</a>
+        
+        {user ? (
+          <a 
+            href="/dashboard" 
+            class="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-md shadow-indigo-200 flex items-center justify-center gap-2 active:scale-95 border border-indigo-700/10"
+          >
+            Acessar Painel
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          </a>
+        ) : (
+          <div class="flex flex-col gap-4 pt-2">
+            <a href="/login" class="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors py-2 text-center border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100">Entrar</a>
+            <a 
+              href="/cadastro" 
+              class="text-sm bg-slate-900 text-white hover:bg-slate-800 py-3 rounded-xl font-extrabold text-center transition-all shadow-md active:scale-95 border border-slate-950"
+            >
+              Criar Conta Grátis
+            </a>
+          </div>
+        )}
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-8 py-16 space-y-36">
+    <main class="max-w-7xl mx-auto px-4 sm:px-8 py-12 md:py-16 space-y-24 md:space-y-36">
       
       <!-- LEADERBOARD TOP ADSENSE SLOT -->
       {adsenseClient !== "ca-pub-placeholder" ? (
@@ -416,7 +449,7 @@ const user = Astro.locals.user;
             <span class="w-1 h-1 rounded-full bg-indigo-500 animate-pulse"></span>
             Anúncio de Parceiro
           </div>
-          <div class="w-full h-[90px] bg-gradient-to-r from-slate-50/80 via-indigo-50/20 to-slate-50/80 border border-slate-200/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between px-6 sm:px-10 gap-4 shadow-sm relative overflow-hidden transition-all duration-350 hover:border-indigo-200">
+          <div class="w-full h-auto sm:h-[90px] py-4 sm:py-0 bg-gradient-to-r from-slate-50/80 via-indigo-50/20 to-slate-50/80 border border-slate-200/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between px-6 sm:px-10 gap-4 shadow-sm relative overflow-hidden transition-all duration-350 hover:border-indigo-200">
             <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-all duration-500"></div>
             <div class="flex items-center gap-4 text-left z-10">
               <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-indigo-500 shadow-sm shrink-0">
@@ -646,7 +679,7 @@ const user = Astro.locals.user;
             <span class="w-1 h-1 rounded-full bg-indigo-500 animate-pulse"></span>
             Parceiro Comercial
           </div>
-          <div class="w-full h-[90px] md:h-[120px] bg-gradient-to-r from-slate-50/80 via-indigo-50/20 to-slate-50/80 border border-slate-200/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between px-6 sm:px-10 gap-4 shadow-sm relative overflow-hidden transition-all duration-350 hover:border-indigo-200">
+          <div class="w-full h-auto sm:h-[90px] md:h-[120px] py-4 sm:py-0 bg-gradient-to-r from-slate-50/80 via-indigo-50/20 to-slate-50/80 border border-slate-200/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between px-6 sm:px-10 gap-4 shadow-sm relative overflow-hidden transition-all duration-350 hover:border-indigo-200">
             <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-all duration-500"></div>
             <div class="flex items-center gap-4 text-left z-10">
               <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-indigo-500 shadow-sm shrink-0">
@@ -1052,7 +1085,7 @@ const user = Astro.locals.user;
             <span class="w-1 h-1 rounded-full bg-indigo-500 animate-pulse"></span>
             Espaço Publicitário
           </div>
-          <div class="w-full h-[90px] md:h-[120px] bg-gradient-to-r from-slate-50/80 via-indigo-50/20 to-slate-50/80 border border-slate-200/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between px-6 sm:px-10 gap-4 shadow-sm relative overflow-hidden transition-all duration-350 hover:border-indigo-200">
+          <div class="w-full h-auto sm:h-[90px] md:h-[120px] py-4 sm:py-0 bg-gradient-to-r from-slate-50/80 via-indigo-50/20 to-slate-50/80 border border-slate-200/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between px-6 sm:px-10 gap-4 shadow-sm relative overflow-hidden transition-all duration-350 hover:border-indigo-200">
             <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-all duration-500"></div>
             <div class="flex items-center gap-4 text-left z-10">
               <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-indigo-500 shadow-sm shrink-0">
@@ -1322,123 +1355,36 @@ const user = Astro.locals.user;
         }, 800);
       });
 
-      // 6. Mapa Interativo (Fase 15)
-      const mapContestData = {
-        sp: {
-          orgao: "Tribunal de Justiça de SP",
-          banca: "Vunesp",
-          salario: "R$ 7.200,00",
-          vagas: "150 vagas",
-          status: "Inscrições Abertas",
-          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
-        },
-        rj: {
-          orgao: "Polícia Civil do Estado do RJ",
-          banca: "FGV",
-          salario: "R$ 6.200,00",
-          vagas: "120 vagas",
-          status: "Inscrições Abertas",
-          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
-        },
-        df: {
-          orgao: "Tribunal de Contas da União",
-          banca: "FGV",
-          salario: "R$ 26.800,00",
-          vagas: "20 vagas",
-          status: "Inscrições Abertas",
-          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
-        },
-        mg: {
-          orgao: "Prefeitura de Belo Horizonte",
-          banca: "IBGP",
-          salario: "R$ 4.800,00",
-          vagas: "300 vagas",
-          status: "Inscrições Abertas",
-          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
-        },
-        sc: {
-          orgao: "Tribunal de Justiça de SC",
-          banca: "FGV",
-          salario: "R$ 8.500,00",
-          vagas: "45 vagas",
-          status: "Inscrições Abertas",
-          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
-        },
-        ba: {
-          orgao: "Banco do Brasil S.A. (BA)",
-          banca: "Cesgranrio",
-          salario: "R$ 5.900,00",
-          vagas: "80 vagas",
-          status: "Inscrições Abertas",
-          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
-        }
-      };
+      // 6. Mobile Menu Toggle Control
+      const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const hamburgerIcon = document.getElementById('menu-icon-hamburger');
+      const closeIcon = document.getElementById('menu-icon-close');
 
-      const mapPins = document.querySelectorAll('.map-pin-node');
-      const mapTooltip = document.getElementById('map-dynamic-tooltip');
-      const teaserSvgMap = document.getElementById('teaser-svg-map');
-
-      mapPins.forEach(pin => {
-        pin.addEventListener('mouseenter', (e) => {
-          const contestKey = pin.getAttribute('data-contest');
-          const data = mapContestData[contestKey];
-          if (!data) return;
-
-          mapTooltip.innerHTML = `
-            <div class="space-y-3.5">
-              <div class="flex justify-between items-center gap-2">
-                <span class="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[8.5px] font-bold rounded uppercase tracking-wider font-mono">
-                  ` + data.banca + `
-                </span>
-                <span class="px-2 py-0.5 ` + data.classeStatus + ` border text-[8.5px] font-bold rounded uppercase tracking-wider font-mono">
-                  ` + data.status + `
-                </span>
-              </div>
-              <div class="space-y-0.5">
-                <h4 class="text-xs font-outfit font-extrabold text-slate-800 line-clamp-1 leading-tight">` + data.orgao + `</h4>
-                <p class="text-[9px] text-slate-400 font-semibold font-mono">Vagas: <span class="text-slate-600 font-bold">` + data.vagas + `</span></p>
-              </div>
-              <div class="flex justify-between items-center border-t border-slate-100 pt-2.5">
-                <div class="flex flex-col">
-                  <span class="text-slate-400 text-[8px] uppercase tracking-widest font-bold">Salário</span>
-                  <span class="text-xs font-extrabold text-slate-800 font-mono">` + data.salario + `</span>
-                </div>
-                <div class="text-right">
-                  <span class="inline-flex items-center gap-0.5 text-[8.5px] font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100/50 px-1.5 py-0.5 rounded-full select-none">
-                    🔒 Proximidade & Rotas
-                  </span>
-                </div>
-              </div>
-            </div>
-          `;
-
-          const parentRect = teaserSvgMap.parentElement.getBoundingClientRect();
-          const pinRect = pin.getBoundingClientRect();
-          
-          const left = pinRect.left - parentRect.left + (pinRect.width / 2) - (mapTooltip.offsetWidth / 2);
-          const top = pinRect.top - parentRect.top - mapTooltip.offsetHeight - 12;
-
-          mapTooltip.style.left = left + 'px';
-          mapTooltip.style.top = top + 'px';
-
-          mapTooltip.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-          mapTooltip.classList.add('opacity-100', 'scale-100');
+      if (mobileMenuToggle && mobileMenu) {
+        mobileMenuToggle.addEventListener('click', () => {
+          const isOpen = !mobileMenu.classList.contains('hidden');
+          if (isOpen) {
+            mobileMenu.classList.add('hidden');
+            mobileMenu.classList.remove('flex');
+            hamburgerIcon?.classList.remove('hidden');
+            closeIcon?.classList.add('hidden');
+          } else {
+            mobileMenu.classList.remove('hidden');
+            mobileMenu.classList.add('flex');
+            hamburgerIcon?.classList.add('hidden');
+            closeIcon?.classList.remove('hidden');
+          }
         });
 
-        pin.addEventListener('mouseleave', () => {
-          mapTooltip.classList.remove('opacity-100', 'scale-100');
-          mapTooltip.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-        });
-
-        pin.addEventListener('click', (e) => {
-          e.preventDefault();
-          openConversionModal();
-        });
-      });
-
-      if (mapTooltip) {
-        mapTooltip.addEventListener('click', (e) => {
-          openConversionModal();
+        // Close menu when clicking on a link
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+          link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+            mobileMenu.classList.remove('flex');
+            hamburgerIcon?.classList.remove('hidden');
+            closeIcon?.classList.add('hidden');
+          });
         });
       }
     </script>
