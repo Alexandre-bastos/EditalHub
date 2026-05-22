@@ -3,26 +3,24 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const apiKey = process.env.GEMINI_API_KEY || '';
-const genAI = new GoogleGenerativeAI(apiKey);
+const apiKeys = (process.env.GEMINI_API_KEY || '')
+  .split(/[;,]/)
+  .map(k => k.trim().replace(/^["']|["']$/g, ''))
+  .filter(Boolean);
 
 export class GeminiService {
-  private model: any;
-
   constructor() {
-    if (!apiKey) {
-      console.warn('GEMINI_API_KEY is not defined. AI features will be disabled.');
+    if (apiKeys.length === 0) {
+      console.warn('Nenhuma GEMINI_API_KEY configurada. Os recursos de IA estarão desativados.');
+    } else {
+      console.log(`[Gemini] Configurado com ${apiKeys.length} chave(s) de API para rotação.`);
     }
-    this.model = genAI.getGenerativeModel({ 
-      model: 'models/gemini-flash-latest',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      }
-    });
   }
 
   async analyzeEdital(pdfBuffer: Buffer) {
-    if (!apiKey) throw new Error('Gemini API Key missing');
+    if (apiKeys.length === 0) {
+      throw new Error('Nenhuma chave de API do Gemini configurada (GEMINI_API_KEY).');
+    }
 
     const prompt = `
       Você é um especialista em análise de editais de concursos públicos.
@@ -78,26 +76,55 @@ export class GeminiService {
       }
     `;
 
-    const result = await this.model.generateContent([
-      {
-        inlineData: {
-          data: pdfBuffer.toString("base64"),
-          mimeType: "application/pdf"
+    let lastError: any = null;
+
+    for (let i = 0; i < apiKeys.length; i++) {
+      const currentKey = apiKeys[i];
+      const partialKey = `${currentKey.substring(0, 8)}...${currentKey.substring(currentKey.length - 4)}`;
+      console.log(`[Gemini] Tentando processar edital com a chave index ${i} (${partialKey})`);
+      
+      try {
+        const genAI = new GoogleGenerativeAI(currentKey);
+        // Usando models/gemini-flash-latest
+        const model = genAI.getGenerativeModel({ 
+          model: 'models/gemini-flash-latest',
+          generationConfig: {
+            responseMimeType: 'application/json',
+          }
+        });
+
+        const result = await model.generateContent([
+          {
+            inlineData: {
+              data: pdfBuffer.toString("base64"),
+              mimeType: "application/pdf"
+            }
+          },
+          prompt
+        ]);
+        
+        const response = await result.response;
+        const text = response.text();
+        
+        try {
+          const cleanJson = text.replace(/```json|```/g, "").trim();
+          return JSON.parse(cleanJson);
+        } catch (error) {
+          console.error('Erro ao processar resposta do Gemini:', text);
+          throw new Error('Resposta da IA não é um JSON válido');
         }
-      },
-      prompt
-    ]);
-    
-    const response = await result.response;
-    const text = response.text();
-    
-    try {
-      const cleanJson = text.replace(/```json|```/g, "").trim();
-      return JSON.parse(cleanJson);
-    } catch (error) {
-      console.error('Erro ao processar resposta do Gemini:', text);
-      throw new Error('Resposta da IA não é um JSON válido');
+      } catch (err: any) {
+        console.warn(`[Gemini] Falha usando a chave index ${i} (${partialKey}): ${err.message || err}`);
+        lastError = err;
+        
+        // Se for erro de JSON inválido, não adianta tentar outra chave, lança direto
+        if (err.message && err.message.includes('JSON válido')) {
+          throw err;
+        }
+      }
     }
+
+    throw new Error(`Todas as ${apiKeys.length} chaves configuradas falharam. Último erro: ${lastError?.message || lastError}`);
   }
 }
 
