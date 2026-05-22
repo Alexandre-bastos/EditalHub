@@ -52,45 +52,44 @@ const organizadoras = await prisma.organizadora.findMany({
   orderBy: { nome: 'asc' }
 });
 ---
-
 <DashboardLayout title="Gestão de Bancas">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     
     <!-- Listagem -->
     <div class="lg:col-span-2 space-y-6">
-      <div class="glass-card overflow-hidden">
-        <div class="px-6 py-4 border-b border-white/5 bg-white/[0.01] flex justify-between items-center">
-          <h3 class="font-outfit font-semibold text-sm uppercase tracking-widest text-gray-500">Bancas Cadastradas</h3>
-          <span class="text-xs text-gray-600">{organizadoras.length} total</span>
+      <div class="bg-white border border-slate-200/60 rounded-3xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+          <h3 class="font-outfit font-extrabold text-sm uppercase tracking-widest text-slate-400">Bancas Cadastradas</h3>
+          <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{organizadoras.length} total</span>
         </div>
         <table class="w-full text-left">
           <thead>
-            <tr class="text-[10px] text-gray-500 uppercase tracking-widest bg-white/[0.02]">
+            <tr class="text-[10px] text-slate-400 uppercase tracking-widest bg-slate-50/30 border-b border-slate-100">
               <th class="px-6 py-4 font-medium">Banca</th>
               <th class="px-6 py-4 font-medium">Status</th>
               <th class="px-6 py-4 font-medium text-right">Ações</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-white/5">
+          <tbody class="divide-y divide-slate-100">
             {organizadoras.map(org => (
-              <tr class={`hover:bg-white/[0.01] transition-colors ${editId === org.id ? 'bg-blue-500/5' : ''}`}>
+              <tr class={`hover:bg-slate-50/40 transition-colors ${editId === org.id ? 'bg-indigo-50/40' : ''}`}>
                 <td class="px-6 py-4">
-                  <p class="font-semibold text-blue-400 text-sm">{org.nome}</p>
-                  <a href={org.site_url} target="_blank" class="text-[10px] text-gray-500 hover:text-gray-300 truncate block max-w-xs mt-0.5">
+                  <p class="font-bold text-indigo-600 text-sm hover:text-indigo-500">{org.nome}</p>
+                  <a href={org.site_url} target="_blank" class="text-[10px] text-slate-400 hover:text-slate-600 truncate block max-w-xs mt-0.5 font-medium">
                     {org.site_url}
                   </a>
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
-                    <span class={`w-1.5 h-1.5 rounded-full ${org.ativo ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500'}`}></span>
-                    <span class="text-xs font-medium text-gray-400">{org.ativo ? 'Ativa' : 'Inativa'}</span>
+                    <span class={`w-1.5 h-1.5 rounded-full ${org.ativo ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)]' : 'bg-red-500'}`}></span>
+                    <span class="text-xs font-semibold text-slate-500">{org.ativo ? 'Ativa' : 'Inativa'}</span>
                   </div>
                 </td>
                 <td class="px-6 py-4 text-right">
                   <div class="flex justify-end gap-2">
                     <a 
                       href={`/organizadoras?edit=${org.id}`} 
-                      class="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-blue-400 transition-all"
+                      class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-indigo-600 transition-all border border-transparent hover:border-slate-100 active:scale-95"
                       title="Editar"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
@@ -98,7 +97,7 @@ const organizadoras = await prisma.organizadora.findMany({
                     <form method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta banca? Se houver editais vinculados, ela será apenas desativada.')" class="inline">
                       <input type="hidden" name="action" value="delete" />
                       <input type="hidden" name="id" value={org.id} />
-                      <button type="submit" class="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-red-400 transition-all">
+                      <button type="submit" class="p-2 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600 transition-all border border-transparent hover:border-red-100 active:scale-95 cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                       </button>
                     </form>
@@ -113,9 +112,9 @@ const organizadoras = await prisma.organizadora.findMany({
 
     <!-- Formulário -->
     <div class="space-y-6">
-      <div class="glass-card p-6 border-blue-500/20 shadow-lg shadow-blue-500/5">
-        <h3 class="font-outfit font-semibold mb-6 flex items-center gap-2 text-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400">
+      <div class="bg-white border border-slate-200/60 rounded-3xl shadow-sm p-6">
+        <h3 class="font-outfit font-extrabold text-slate-800 mb-6 flex items-center gap-2 text-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600">
             {editOrg ? <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/> : <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>}
             {!editOrg && <circle cx="9" cy="7" r="4"/>}
           </svg>
@@ -127,48 +126,48 @@ const organizadoras = await prisma.organizadora.findMany({
           {editOrg && <input type="hidden" name="id" value={editOrg.id} />}
           
           <div>
-            <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Nome da Organizadora</label>
+            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-2 font-bold">Nome da Organizadora</label>
             <input 
               name="nome" 
               type="text" 
               value={editOrg?.nome}
               placeholder="Ex: FGV, Cebraspe" 
-              class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" 
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm font-semibold" 
               required 
             />
           </div>
           
           <div>
-            <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">URL do Portal de Concursos</label>
+            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-2 font-bold">URL do Portal de Concursos</label>
             <input 
               name="site_url" 
               type="url" 
               value={editOrg?.site_url}
               placeholder="https://..." 
-              class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" 
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm font-semibold" 
               required 
             />
           </div>
 
           {editOrg && (
-            <div class="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-250/60">
               <input 
                 id="ativo" 
                 name="ativo" 
                 type="checkbox" 
                 checked={editOrg.ativo}
-                class="w-4 h-4 rounded border-white/10 bg-white/5 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                class="w-4 h-4 rounded border-slate-300 bg-slate-100 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
               />
-              <label for="ativo" class="text-xs font-medium text-gray-300">Banca Ativa para Coleta</label>
+              <label for="ativo" class="text-xs font-semibold text-slate-600 cursor-pointer">Banca Ativa para Coleta</label>
             </div>
           )}
           
           <div class="flex gap-3 pt-2">
-            <button type="submit" class="btn-primary flex-1">
+            <button type="submit" class="flex-1 py-3.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-xl shadow-md shadow-indigo-100 hover:shadow-lg transition-all active:scale-[0.98] text-xs uppercase tracking-wider">
               {editOrg ? 'Salvar Alterações' : 'Cadastrar Banca'}
             </button>
             {editOrg && (
-              <a href="/organizadoras" class="px-4 py-2.5 rounded-xl border border-white/10 text-xs font-medium hover:bg-white/5 transition-all flex items-center">
+              <a href="/organizadoras" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-extrabold bg-white hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98] uppercase tracking-wider flex items-center justify-center">
                 Cancelar
               </a>
             )}
@@ -177,9 +176,9 @@ const organizadoras = await prisma.organizadora.findMany({
       </div>
       
       {!editOrg && (
-        <div class="glass-card p-6 bg-gradient-to-br from-indigo-500/10 to-blue-500/10 border-indigo-500/20">
-          <h4 class="text-sm font-semibold mb-2">Dica de Coleta</h4>
-          <p class="text-xs text-gray-400 leading-relaxed italic">
+        <div class="bg-gradient-to-br from-indigo-50/50 to-blue-50/50 border border-indigo-100 rounded-3xl p-6 shadow-sm">
+          <h4 class="text-sm font-bold text-indigo-950 mb-2">Dica de Coleta</h4>
+          <p class="text-xs text-indigo-900/70 leading-relaxed font-semibold">
             Atualmente, a coleta automatizada está otimizada para o padrão da FGV. Novas bancas podem requerer ajustes nos seletores do coletor.
           </p>
         </div>

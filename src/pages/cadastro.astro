@@ -63,7 +63,7 @@ if (Astro.request.method === 'POST') {
 ---
 
 <!doctype html>
-<html lang="pt-br" class="dark">
+<html lang="pt-br" class="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content="EditalHub - Crie sua Conta Grátis" />
@@ -72,31 +72,36 @@ if (Astro.request.method === 'POST') {
     <title>Criar Conta Grátis | EditalHub</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-[#070708] text-gray-100 font-inter min-h-screen flex items-center justify-center relative overflow-hidden">
+  <body class="bg-[#fafafc] text-slate-800 font-inter min-h-screen flex items-center justify-center relative overflow-hidden selection:bg-indigo-500/20 selection:text-indigo-900 antialiased">
     
-    <!-- Efeitos decorativos em degrade de fundo (Glow Premium) -->
-    <div class="absolute top-[-25%] right-[-10%] w-[55%] h-[55%] rounded-full bg-blue-900/10 blur-[150px] -z-10"></div>
-    <div class="absolute bottom-[-25%] left-[-10%] w-[55%] h-[55%] rounded-full bg-indigo-900/10 blur-[150px] -z-10"></div>
+    <!-- Efeitos decorativos em degrade de fundo (Glow Premium Claro) -->
+    <div class="absolute top-[-25%] right-[-10%] w-[55%] h-[55%] rounded-full bg-blue-100/30 blur-[150px] -z-10 animate-pulse"></div>
+    <div class="absolute bottom-[-25%] left-[-10%] w-[55%] h-[55%] rounded-full bg-indigo-100/30 blur-[150px] -z-10"></div>
 
     <div class="w-full max-w-md px-6 py-10">
       <!-- Cabeçalho de Logo -->
       <div class="text-center mb-8">
-        <a href="/" class="text-4xl font-outfit font-extrabold bg-gradient-to-r from-blue-400 via-indigo-400 to-indigo-600 bg-clip-text text-transparent tracking-tight">
-          EditalHub
-        </a>
-        <p class="text-xs text-gray-400 uppercase tracking-widest mt-2 font-medium">Recomendações Inteligentes de Concursos</p>
+        <div class="relative group inline-block">
+          <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-blue-400 rounded-lg blur opacity-15 transition duration-500"></div>
+          <a href="/" class="relative bg-white px-4 py-2 rounded-xl border border-slate-200 flex items-center gap-2 shadow-sm">
+            <span class="text-3xl font-outfit font-extrabold bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 bg-clip-text text-transparent tracking-tight">
+              Edital<span class="text-indigo-600">Hub</span>
+            </span>
+          </a>
+        </div>
+        <p class="text-[9px] text-slate-400 uppercase tracking-widest mt-3.5 font-bold font-mono">Recomendações Inteligentes de Concursos</p>
       </div>
 
-      <!-- Card de Cadastro Glassmorphism -->
-      <div class="bg-[#0c0c0e]/60 backdrop-blur-xl border border-white/5 p-8 rounded-3xl shadow-2xl shadow-black/40">
-        <h2 class="text-xl font-outfit font-bold text-white mb-1">Crie sua conta grátis</h2>
-        <p class="text-xs text-gray-400 mb-6">Desbloqueie todos os concursos compatíveis e receba alertas.</p>
+      <!-- Card de Cadastro -->
+      <div class="bg-white border border-slate-200/80 p-8 rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+        <h2 class="text-2xl font-outfit font-extrabold text-slate-900 mb-1 tracking-tight">Crie sua conta grátis</h2>
+        <p class="text-xs text-slate-400 mb-6 font-light">Desbloqueie todos os concursos compatíveis e receba alertas.</p>
 
         <!-- Banner de Mensagem de Erro -->
         {errorMessage && (
-          <div class="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3.5 rounded-2xl mb-6 font-medium flex items-center gap-2">
+          <div class="bg-red-50 border border-red-100 text-red-600 text-xs p-3.5 rounded-2xl mb-6 font-medium flex items-center gap-2 shadow-sm animate-fade-in">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <span>{errorMessage}</span>
           </div>
@@ -105,59 +110,59 @@ if (Astro.request.method === 'POST') {
         <!-- Formulário -->
         <form method="POST" class="space-y-4">
           <div>
-            <label for="nome" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nome Completo</label>
+            <label for="nome" class="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2 font-mono">Nome Completo</label>
             <input 
               type="text" 
               name="nome" 
               id="nome" 
               required 
-              placeholder="Seu nome"
-              class="w-full bg-[#111113] border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all font-medium"
+              placeholder="Seu nome completo"
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all font-medium shadow-sm"
             />
           </div>
 
           <div>
-            <label for="email" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">E-mail</label>
+            <label for="email" class="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2 font-mono">E-mail</label>
             <input 
               type="email" 
               name="email" 
               id="email" 
               required 
               placeholder="exemplo@email.com"
-              class="w-full bg-[#111113] border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all font-medium"
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all font-medium shadow-sm"
             />
           </div>
 
           <div>
-            <label for="password" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Senha</label>
+            <label for="password" class="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2 font-mono">Senha</label>
             <input 
               type="password" 
               name="password" 
               id="password" 
               required 
               placeholder="Mínimo 6 caracteres"
-              class="w-full bg-[#111113] border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all font-medium"
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all font-medium shadow-sm"
             />
           </div>
 
           <button 
             type="submit" 
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98] mt-2 cursor-pointer flex items-center justify-center gap-2"
+            class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-md active:scale-[0.98] mt-2 cursor-pointer flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
           >
             Começar Agora
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </button>
         </form>
 
         <div class="mt-6 text-center">
-          <p class="text-xs text-gray-400">
+          <p class="text-xs text-slate-400 font-light">
             Já possui uma conta? 
-            <a href="/login" class="text-blue-400 hover:underline font-semibold ml-1">Fazer Login</a>
+            <a href="/login" class="text-indigo-600 hover:underline font-bold ml-1 transition-colors">Fazer Login</a>
           </p>
         </div>
       </div>
 
-      <p class="text-center text-xs text-gray-600 mt-8">
+      <p class="text-center text-[10px] text-slate-400 mt-8 font-light">
         &copy; {new Date().getFullYear()} EditalHub. Todos os direitos reservados.
       </p>
     </div>

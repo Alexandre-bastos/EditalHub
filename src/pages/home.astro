@@ -210,7 +210,7 @@ const user = Astro.locals.user;
 ---
 
 <!doctype html>
-<html lang="pt-br" class="dark">
+<html lang="pt-br" class="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content="Existe um concurso ideal para você. Descubra agora com a inteligência artificial do EditalHub." />
@@ -221,48 +221,48 @@ const user = Astro.locals.user;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-[#030303] text-[#f4f4f6] font-jakarta min-h-screen relative overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200 antialiased">
+  <body class="bg-[#fafafc] text-slate-800 font-jakarta min-h-screen relative overflow-x-hidden selection:bg-indigo-500/20 selection:text-indigo-900 antialiased">
     
-    <!-- Ultra-Premium Glowing System (Glows em 3D de alta sofisticação) -->
-    <div class="absolute top-[-25%] left-[-15%] w-[80%] h-[80%] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.15)_0%,rgba(0,0,0,0)_70%)] blur-[160px] -z-10 animate-slow-glow"></div>
-    <div class="absolute top-[20%] right-[-25%] w-[70%] h-[70%] rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.12)_0%,rgba(0,0,0,0)_70%)] blur-[180px] -z-10"></div>
-    <div class="absolute bottom-[-10%] left-[-15%] w-[60%] h-[60%] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.08)_0%,rgba(0,0,0,0)_70%)] blur-[140px] -z-10"></div>
+    <!-- Clean Premium Decorative Light Glows (Glows em tons claros com opacidade reduzida para sofisticação) -->
+    <div class="absolute top-[-25%] left-[-15%] w-[80%] h-[80%] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.06)_0%,rgba(0,0,0,0)_70%)] blur-[160px] -z-10 animate-slow-glow"></div>
+    <div class="absolute top-[20%] right-[-25%] w-[70%] h-[70%] rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.05)_0%,rgba(0,0,0,0)_70%)] blur-[180px] -z-10"></div>
+    <div class="absolute bottom-[-10%] left-[-15%] w-[60%] h-[60%] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.04)_0%,rgba(0,0,0,0)_70%)] blur-[140px] -z-10"></div>
 
-    <!-- Floating Elegant Header -->
-    <header class="w-full border-b border-white/5 bg-[#030303]/75 backdrop-blur-xl sticky top-0 z-40 transition-all duration-300">
-      <div class="max-w-7xl mx-auto px-8 py-5 flex justify-between items-center">
+    <!-- Floating Elegant Header in White -->
+    <header class="w-full border-b border-slate-200/50 bg-white/80 backdrop-blur-xl sticky top-0 z-40 transition-all duration-300">
+      <div class="max-w-7xl mx-auto px-8 py-4.5 flex justify-between items-center">
         <div class="flex items-center gap-3">
-          <!-- Logo com Glow -->
+          <!-- Logo com Glow Suave -->
           <div class="relative group">
-            <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg blur opacity-30 group-hover:opacity-75 transition duration-500"></div>
-            <div class="relative bg-black px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2">
-              <span class="text-xl font-outfit font-extrabold bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent tracking-tight">
-                Edital<span class="text-indigo-400">Hub</span>
+            <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-blue-400 rounded-lg blur opacity-15 group-hover:opacity-40 transition duration-500"></div>
+            <div class="relative bg-white px-3.5 py-1.5 rounded-lg border border-slate-200 flex items-center gap-2 shadow-sm">
+              <span class="text-xl font-outfit font-extrabold bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 bg-clip-text text-transparent tracking-tight">
+                Edital<span class="text-indigo-600">Hub</span>
               </span>
             </div>
           </div>
-          <span class="px-2 py-0.5 bg-gradient-to-r from-indigo-500/10 to-blue-500/10 text-indigo-300 text-[9px] font-bold rounded border border-indigo-500/20 uppercase tracking-widest font-mono">AI Engine</span>
+          <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded border border-indigo-100 uppercase tracking-widest font-mono">AI Engine</span>
         </div>
         
         <nav class="flex items-center gap-8">
-          <a href="#simulator" class="text-xs font-semibold text-gray-400 hover:text-white transition-colors relative after:absolute after:bottom-[-6px] after:left-0 after:w-0 after:h-[2px] after:bg-indigo-400 hover:after:w-full after:transition-all after:duration-300">Simulador</a>
-          <a href="#how-it-works" class="text-xs font-semibold text-gray-400 hover:text-white transition-colors relative after:absolute after:bottom-[-6px] after:left-0 after:w-0 after:h-[2px] after:bg-indigo-400 hover:after:w-full after:transition-all after:duration-300">Como Funciona</a>
-          <a href="#salaries" class="text-xs font-semibold text-gray-400 hover:text-white transition-colors relative after:absolute after:bottom-[-6px] after:left-0 after:w-0 after:h-[2px] after:bg-indigo-400 hover:after:w-full after:transition-all after:duration-300">Salários</a>
+          <a href="#simulator" class="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors relative after:absolute after:bottom-[-6px] after:left-0 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all after:duration-300">Simulador</a>
+          <a href="#how-it-works" class="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors relative after:absolute after:bottom-[-6px] after:left-0 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all after:duration-300">Como Funciona</a>
+          <a href="#salaries" class="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors relative after:absolute after:bottom-[-6px] after:left-0 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all after:duration-300">Salários</a>
           
           {user ? (
             <a 
               href="/dashboard" 
-              class="text-xs bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-900/40 flex items-center gap-2 active:scale-95 border border-indigo-500/30"
+              class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-indigo-200 flex items-center gap-2 active:scale-95 border border-indigo-700/10"
             >
               Acessar Painel
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
             </a>
           ) : (
             <div class="flex items-center gap-5">
-              <a href="/login" class="text-xs font-bold text-gray-300 hover:text-white transition-colors">Entrar</a>
+              <a href="/login" class="text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors">Entrar</a>
               <a 
                 href="/cadastro" 
-                class="text-xs bg-white text-black hover:bg-slate-100 px-5 py-2.5 rounded-xl font-extrabold transition-all shadow-xl shadow-white/5 active:scale-95 border border-white/10"
+                class="text-xs bg-slate-900 text-white hover:bg-slate-800 px-5 py-2.5 rounded-xl font-extrabold transition-all shadow-md active:scale-95 border border-slate-950"
               >
                 Criar Conta Grátis
               </a>
@@ -274,33 +274,33 @@ const user = Astro.locals.user;
 
     <main class="max-w-7xl mx-auto px-8 py-16 space-y-36">
       
-      <!-- 1. HERO INTELIGENTE E VISUAL CENTERPIECE -->
+      <!-- 1. HERO INTELIGENTE E VISUAL CENTERPIECE (WHITE THEME) -->
       <section class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center py-6">
         
         <!-- Textos e Headline do Hero -->
         <div class="lg:col-span-6 space-y-8 text-left">
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-indigo-500/10 to-blue-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-300 uppercase tracking-widest">
-            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span>
             Revolução no Mapeamento de Editais
           </div>
           
-          <h1 class="text-5xl md:text-6xl font-outfit font-extrabold text-white tracking-tight leading-[1.05]">
-            Existe um concurso <span class="bg-gradient-to-r from-indigo-200 via-indigo-400 to-indigo-500 bg-clip-text text-transparent">perfeito</span> para você.
+          <h1 class="text-5xl md:text-6xl font-outfit font-extrabold text-slate-900 tracking-tight leading-[1.05]">
+            Existe um concurso <span class="bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">perfeito</span> para você.
           </h1>
           
-          <p class="text-base text-gray-400 leading-relaxed max-w-xl font-light">
+          <p class="text-base text-slate-500 leading-relaxed max-w-xl font-light">
             Desenvolvemos uma inteligência que varre diários oficiais do Brasil inteiro, cruza requisitos técnicos de editais complexos e revela instantaneamente as carreiras onde suas chances de aprovação são máximas.
           </p>
 
           <!-- Escolaridade Rápida Integrada no Hero -->
           <div class="space-y-4">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500">Comece experimentando em 1 clique:</h4>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Comece experimentando em 1 clique:</h4>
             
             <div class="flex flex-wrap gap-2.5" id="school-filters">
               {["Ensino Fundamental", "Ensino Médio", "Técnico", "Superior", "Pós-graduação"].map((level) => (
                 <button 
                   data-level={level} 
-                  class="px-4 py-3 rounded-xl bg-white/[0.02] hover:bg-indigo-600/10 hover:border-indigo-500/40 hover:text-indigo-200 border border-white/5 text-xs font-semibold text-gray-400 transition-all cursor-pointer hover:shadow-[0_0_15px_rgba(99,102,241,0.1)] active:scale-95"
+                  class="px-4 py-3 rounded-xl bg-white hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 border border-slate-200 text-xs font-semibold text-slate-600 transition-all cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.03)] active:scale-95"
                 >
                   {level === "Técnico" ? "Ensino Técnico" : level === "Superior" ? "Ensino Superior" : level}
                 </button>
@@ -309,89 +309,89 @@ const user = Astro.locals.user;
           </div>
         </div>
 
-        <!-- Visual Centerpiece: UI Mockup / AI Scanning Radar Simulator -->
+        <!-- Visual Centerpiece: UI Mockup / AI Scanning Radar Simulator (White/Light Theme) -->
         <div class="lg:col-span-6 flex justify-center relative">
           <!-- Brilho Atrás do Mockup -->
-          <div class="absolute -inset-4 bg-gradient-to-tr from-indigo-600 to-blue-500 rounded-3xl opacity-10 blur-xl"></div>
+          <div class="absolute -inset-4 bg-gradient-to-tr from-indigo-500 to-blue-400 rounded-3xl opacity-5 blur-xl"></div>
           
           <!-- Mockup Frame -->
-          <div class="relative w-full max-w-lg bg-[#0a0a0d] border border-white/10 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden group">
+          <div class="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_20px_40px_rgba(15,23,42,0.08)] overflow-hidden group">
             
             <!-- Linhas de Design High-Tech -->
-            <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
+            <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent"></div>
             
             <!-- Header do Mockup -->
-            <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
               <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-red-500/40"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/40"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-green-500/40"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-red-400/60"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/60"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-green-400/60"></span>
               </div>
-              <span class="text-[9px] font-mono text-indigo-400/60 uppercase tracking-widest">AI Radar Scanner</span>
+              <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">AI Radar Scanner</span>
             </div>
 
             <!-- Scanner Simulator Interface -->
             <div class="space-y-4">
               <!-- Search simulation box -->
-              <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3.5 flex justify-between items-center">
+              <div class="bg-slate-50 border border-slate-100 rounded-xl p-3.5 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                  <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                   </div>
                   <div class="text-left">
-                    <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Perfil analisado</p>
-                    <p class="text-xs font-bold text-white">Candidato de Alto Desempenho</p>
+                    <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Perfil analisado</p>
+                    <p class="text-xs font-bold text-slate-800">Candidato de Alto Desempenho</p>
                   </div>
                 </div>
-                <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[8px] font-bold rounded uppercase">Ativo</span>
+                <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-bold rounded uppercase">Ativo</span>
               </div>
 
               <!-- Animated Scan list -->
               <div class="space-y-2.5 relative">
                 <!-- Overlay scan line effect -->
-                <div class="absolute left-0 w-full h-[60px] bg-gradient-to-b from-indigo-500/0 via-indigo-500/10 to-indigo-500/0 border-y border-indigo-500/20 opacity-80 animate-scan pointer-events-none"></div>
+                <div class="absolute left-0 w-full h-[60px] bg-gradient-to-b from-indigo-500/0 via-indigo-500/5 to-indigo-500/0 border-y border-indigo-500/10 opacity-80 animate-scan pointer-events-none"></div>
                 
                 <!-- Mock Contest item 1 -->
-                <div class="bg-white/[0.01] border border-white/5 rounded-xl p-3 flex justify-between items-center transition-all duration-500 hover:bg-white/[0.03]">
+                <div class="bg-white border border-slate-100 rounded-xl p-3.5 flex justify-between items-center transition-all duration-500 hover:bg-slate-50 shadow-sm">
                   <div class="text-left space-y-1">
-                    <span class="px-1.5 py-0.2 bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[7px] font-bold rounded font-mono uppercase">VUNESP</span>
-                    <h5 class="text-xs font-bold text-white">Tribunal de Justiça SP</h5>
-                    <p class="text-[9px] text-gray-500">Cargo: Escrevente Técnico</p>
+                    <span class="px-1.5 py-0.2 bg-blue-50 border border-blue-100 text-blue-600 text-[7px] font-bold rounded font-mono uppercase">VUNESP</span>
+                    <h5 class="text-xs font-bold text-slate-800">Tribunal de Justiça SP</h5>
+                    <p class="text-[9px] text-slate-400 font-medium">Cargo: Escrevente Técnico</p>
                   </div>
                   <div class="text-right space-y-1">
-                    <span class="text-xs font-extrabold text-emerald-400">96% compatível</span>
-                    <p class="text-[9px] text-indigo-300 font-bold">R$ 7.200,00</p>
+                    <span class="text-xs font-extrabold text-emerald-600">96% compatível</span>
+                    <p class="text-[9px] text-indigo-600 font-bold">R$ 7.200,00</p>
                   </div>
                 </div>
 
                 <!-- Mock Contest item 2 -->
-                <div class="bg-white/[0.01] border border-white/5 rounded-xl p-3 flex justify-between items-center opacity-60">
+                <div class="bg-white border border-slate-100 rounded-xl p-3.5 flex justify-between items-center opacity-60">
                   <div class="text-left space-y-1">
-                    <span class="px-1.5 py-0.2 bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[7px] font-bold rounded font-mono uppercase">FGV</span>
-                    <h5 class="text-xs font-bold text-white">Senado Federal</h5>
-                    <p class="text-[9px] text-gray-500">Cargo: Analista Legislativo</p>
+                    <span class="px-1.5 py-0.2 bg-purple-50 border border-purple-100 text-purple-600 text-[7px] font-bold rounded font-mono uppercase">FGV</span>
+                    <h5 class="text-xs font-bold text-slate-800">Senado Federal</h5>
+                    <p class="text-[9px] text-slate-400 font-medium">Cargo: Analista Legislativo</p>
                   </div>
                   <div class="text-right space-y-1">
-                    <span class="text-xs font-extrabold text-indigo-400">91% compatível</span>
-                    <p class="text-[9px] text-indigo-300 font-bold">R$ 25.800,00</p>
+                    <span class="text-xs font-extrabold text-indigo-600">91% compatível</span>
+                    <p class="text-[9px] text-indigo-600 font-bold">R$ 25.800,00</p>
                   </div>
                 </div>
               </div>
             </div>
             
             <!-- Bottom decorative stats inside mockup -->
-            <div class="border-t border-white/5 mt-5 pt-4 grid grid-cols-3 gap-2 text-center">
+            <div class="border-t border-slate-100 mt-5 pt-4 grid grid-cols-3 gap-2 text-center">
               <div>
-                <p class="text-[8px] text-gray-500 uppercase tracking-widest font-semibold">Bancas Monitoradas</p>
-                <p class="text-xs font-extrabold text-white">36 Ativas</p>
+                <p class="text-[8px] text-slate-400 uppercase tracking-widest font-semibold">Bancas Monitoradas</p>
+                <p class="text-xs font-extrabold text-slate-800">36 Ativas</p>
               </div>
               <div>
-                <p class="text-[8px] text-gray-500 uppercase tracking-widest font-semibold">Atualização</p>
-                <p class="text-xs font-extrabold text-indigo-400">24/7 Realtime</p>
+                <p class="text-[8px] text-slate-400 uppercase tracking-widest font-semibold">Atualização</p>
+                <p class="text-xs font-extrabold text-indigo-600">24/7 Realtime</p>
               </div>
               <div>
-                <p class="text-[8px] text-gray-500 uppercase tracking-widest font-semibold">Garantia AI</p>
-                <p class="text-xs font-extrabold text-emerald-400">Dados Filtrados</p>
+                <p class="text-[8px] text-slate-400 uppercase tracking-widest font-semibold">Garantia AI</p>
+                <p class="text-xs font-extrabold text-emerald-600">Dados Filtrados</p>
               </div>
             </div>
           </div>
@@ -403,56 +403,56 @@ const user = Astro.locals.user;
         
         <!-- Headers -->
         <div class="text-center space-y-4 max-w-2xl mx-auto">
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/5 border border-emerald-500/10 text-[9px] font-bold text-emerald-400 uppercase tracking-widest">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[9px] font-bold text-emerald-600 uppercase tracking-widest">
             ✓ Perfil Carregado com Sucesso
           </div>
-          <h2 class="text-4xl font-outfit font-extrabold text-white">Oportunidades sob Medida</h2>
-          <p class="text-sm text-gray-400 leading-relaxed">
-            Nossa IA isolou as melhores oportunidades disponíveis no Brasil para candidatos de perfil <span id="current-level-tag" class="font-extrabold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Superior</span>.
+          <h2 class="text-4xl font-outfit font-extrabold text-slate-900 tracking-tight">Oportunidades sob Medida</h2>
+          <p class="text-sm text-slate-500 leading-relaxed font-light">
+            Nossa IA isolou as melhores oportunidades disponíveis no Brasil para candidatos de perfil <span id="current-level-tag" class="font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Superior</span>.
           </p>
         </div>
 
-        <!-- Premium Glassmorphic Stats Grid -->
+        <!-- Premium Glassmorphic Stats Grid in Light Theme -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
           
           <!-- Stat 1 -->
-          <div class="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/10 p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-            <span class="text-gray-500 text-[10px] font-extrabold uppercase tracking-widest">Compatíveis Encontrados</span>
-            <span class="text-4xl font-outfit font-extrabold text-white tracking-tight" id="stat-encontrados">0</span>
-            <div class="absolute -top-6 -right-6 w-16 h-16 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-all duration-500"></div>
+          <div class="bg-white border border-slate-200/80 p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group hover:border-indigo-400 transition-all duration-300 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+            <span class="text-slate-400 text-[10px] font-extrabold uppercase tracking-widest">Compatíveis Encontrados</span>
+            <span class="text-4xl font-outfit font-extrabold text-slate-950 tracking-tight" id="stat-encontrados">0</span>
+            <div class="absolute -top-6 -right-6 w-16 h-16 bg-indigo-50 rounded-full blur-xl group-hover:bg-indigo-100/50 transition-all duration-500"></div>
           </div>
 
           <!-- Stat 2 -->
-          <div class="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/10 p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-            <span class="text-gray-500 text-[10px] font-extrabold uppercase tracking-widest">Remuneração Topo</span>
-            <span class="text-4xl font-outfit font-extrabold text-emerald-400 tracking-tight" id="stat-salario">R$ 0</span>
-            <div class="absolute -top-6 -right-6 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-all duration-500"></div>
+          <div class="bg-white border border-slate-200/80 p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group hover:border-emerald-400 transition-all duration-300 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+            <span class="text-slate-400 text-[10px] font-extrabold uppercase tracking-widest">Remuneração Topo</span>
+            <span class="text-4xl font-outfit font-extrabold text-emerald-600 tracking-tight" id="stat-salario">R$ 0</span>
+            <div class="absolute -top-6 -right-6 w-16 h-16 bg-emerald-50 rounded-full blur-xl group-hover:bg-emerald-100/50 transition-all duration-500"></div>
           </div>
 
           <!-- Stat 3 -->
-          <div class="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/10 p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-            <span class="text-gray-500 text-[10px] font-extrabold uppercase tracking-widest">Com Inscrições Abertas</span>
-            <span class="text-4xl font-outfit font-extrabold text-blue-400 tracking-tight" id="stat-abertas">0</span>
-            <div class="absolute -top-6 -right-6 w-16 h-16 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
+          <div class="bg-white border border-slate-200/80 p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group hover:border-blue-400 transition-all duration-300 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+            <span class="text-slate-400 text-[10px] font-extrabold uppercase tracking-widest">Com Inscrições Abertas</span>
+            <span class="text-4xl font-outfit font-extrabold text-blue-600 tracking-tight" id="stat-abertas">0</span>
+            <div class="absolute -top-6 -right-6 w-16 h-16 bg-blue-50 rounded-full blur-xl group-hover:bg-blue-100/50 transition-all duration-500"></div>
           </div>
 
           <!-- Stat 4 -->
-          <div class="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/10 p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-            <span class="text-gray-500 text-[10px] font-extrabold uppercase tracking-widest">Aguardados Previstos</span>
-            <span class="text-4xl font-outfit font-extrabold text-purple-400 tracking-tight" id="stat-previstos">0</span>
-            <div class="absolute -top-6 -right-6 w-16 h-16 bg-purple-500/5 rounded-full blur-xl group-hover:bg-purple-500/10 transition-all duration-500"></div>
+          <div class="bg-white border border-slate-200/80 p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden group hover:border-purple-400 transition-all duration-300 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+            <span class="text-slate-400 text-[10px] font-extrabold uppercase tracking-widest">Aguardados Previstos</span>
+            <span class="text-4xl font-outfit font-extrabold text-purple-600 tracking-tight" id="stat-previstos">0</span>
+            <div class="absolute -top-6 -right-6 w-16 h-16 bg-purple-50 rounded-full blur-xl group-hover:bg-purple-100/50 transition-all duration-500"></div>
           </div>
 
         </div>
 
-        <!-- Preview de Cards com Moldura de Gradiente e Luz Premium -->
+        <!-- Preview de Cards em Light Mode -->
         <div class="space-y-8">
-          <div class="flex justify-between items-center border-b border-white/5 pb-4">
-            <h3 class="text-lg font-outfit font-bold text-white flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-indigo-400"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          <div class="flex justify-between items-center border-b border-slate-200 pb-4">
+            <h3 class="text-lg font-outfit font-bold text-slate-800 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-indigo-600"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
               Sugestões Cirúrgicas do Nosso Algoritmo
             </h3>
-            <span class="text-[10px] font-mono text-gray-500 uppercase tracking-widest flex items-center gap-2">
+            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest flex items-center gap-2 font-bold">
               <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
               Live Feed
             </span>
@@ -465,53 +465,211 @@ const user = Astro.locals.user;
 
       </section>
 
-      <!-- 3. RADAR DE SIMULAÇÃO INTELIGENTE (SIMULADOR MOTIVACIONAL REESTRUTURADO) -->
+      <!-- 2B. MAPA GEOGRÁFICO INTERATIVO DE CONCURSOS (TEASER PREMIUM) -->
+      <section id="geo-map-section" class="space-y-12">
+        <div class="text-center space-y-4 max-w-2xl mx-auto">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-[9px] font-bold text-indigo-600 uppercase tracking-widest font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+            Mapeamento Geográfico em Tempo Real
+          </div>
+          <h2 class="text-4xl font-outfit font-extrabold text-slate-900 tracking-tight">Onde estão as suas vagas?</h2>
+          <p class="text-sm text-slate-500 leading-relaxed font-light">
+            Nossa inteligência artificial mapeia as coordenadas geográficas de cada edital para ajudar você a planejar suas viagens e focar nos concursos mais próximos da sua residência.
+          </p>
+        </div>
+
+        <!-- Container do Mapa com Efeito Premium de Bloqueio -->
+        <div class="relative bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-[0_20px_50px_rgba(15,23,42,0.03)] overflow-hidden min-h-[580px]">
+          
+          <!-- Background Grid High-Tech -->
+          <div class="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30 pointer-events-none"></div>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10 h-full">
+            
+            <!-- Painel Lateral de Controle Geográfico (col-span-4) -->
+            <div class="lg:col-span-4 space-y-6 bg-slate-50 border border-slate-100 p-6 rounded-2xl relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] flex flex-col justify-between h-full min-h-[440px]">
+              
+              <!-- Lock Layer directly on this control panel -->
+              <div class="absolute inset-0 bg-white/75 backdrop-blur-[2.5px] rounded-2xl flex flex-col items-center justify-center text-center p-6 z-20 border border-slate-200/50 shadow-inner">
+                <div class="w-10 h-10 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center justify-center text-indigo-600 mb-3.5 shadow-sm">
+                  <svg xmlns="http://www.w3.org/2050/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <h4 class="text-sm font-outfit font-extrabold text-slate-800 leading-tight">Filtro de Precisão</h4>
+                <p class="text-[10px] text-slate-500 leading-relaxed font-light mt-1 max-w-[200px]">
+                  Digite seu CEP e filtre concursos em um raio personalizado de até 50km da sua casa.
+                </p>
+                <div class="mt-4 w-full flex flex-col gap-2">
+                  <input type="text" placeholder="Digite seu CEP... e.g. 01001-000" disabled class="w-full bg-slate-50/50 border border-slate-250 rounded-xl px-3.5 py-2.5 text-[11px] text-slate-400 font-semibold cursor-not-allowed text-center" />
+                  <div class="grid grid-cols-3 gap-1.5">
+                    <button disabled class="py-2 bg-slate-50/50 border border-slate-200 text-slate-400 font-bold rounded-lg text-[9px] cursor-not-allowed">50 km</button>
+                    <button disabled class="py-2 bg-slate-50/50 border border-slate-200 text-slate-400 font-bold rounded-lg text-[9px] cursor-not-allowed">100 km</button>
+                    <button disabled class="py-2 bg-slate-50/50 border border-slate-200 text-slate-400 font-bold rounded-lg text-[9px] cursor-not-allowed">200 km</button>
+                  </div>
+                </div>
+                <button class="mt-5 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-[10px] text-center transition-all shadow-md active:scale-95 uppercase tracking-wider trigger-global-conversion pointer-events-auto cursor-pointer">
+                  Desbloquear Filtro
+                </button>
+              </div>
+
+              <!-- Content underneath just for gorgeous visuals and telemetry -->
+              <div class="space-y-4 filter blur-[0.5px]">
+                <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                  <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest font-mono">Geoposição</span>
+                  <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-bold rounded uppercase">Radar Ativo</span>
+                </div>
+                <div class="space-y-2">
+                  <h4 class="text-sm font-outfit font-extrabold text-slate-800">Localização do Usuário</h4>
+                  <div class="flex gap-2">
+                    <input type="text" value="Seu CEP..." disabled class="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Canvas do Mapa de Vagas (col-span-8) -->
+            <div class="lg:col-span-8 flex justify-center items-center relative min-h-[450px]">
+              
+              <!-- The Brazil SVG is completely crystal clear and sharp now (no blur filter) -->
+              <div class="w-full max-w-xl relative flex justify-center items-center">
+                <svg viewBox="0 0 700 700" class="w-full max-w-md h-auto transition-all duration-700 opacity-95" id="teaser-svg-map">
+                  <defs>
+                    <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.08" />
+                      <stop offset="50%" stop-color="#4f46e5" stop-opacity="0.15" />
+                      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.06" />
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Brazil Silhouette -->
+                  <path d="M 280 80 Q 360 85 450 100 T 520 160 T 580 180 T 630 250 T 570 330 T 540 430 T 510 510 T 450 540 T 380 630 T 330 690 Q 350 620 390 560 T 320 480 T 150 320 T 70 340 T 220 190 Z" 
+                        fill="url(#mapGradient)" 
+                        stroke="rgba(99, 102, 241, 0.4)" 
+                        stroke-width="1.8" 
+                        stroke-dasharray="4 4" />
+
+                  <!-- Constellation Lines connecting main hubs -->
+                  <line x1="430" y1="530" x2="490" y2="520" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1.5" />
+                  <line x1="430" y1="530" x2="480" y2="450" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1.5" />
+                  <line x1="490" y1="520" x2="480" y2="450" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1.5" />
+                  <line x1="480" y1="450" x2="410" y2="380" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1.5" />
+                  <line x1="410" y1="380" x2="430" y2="530" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1.5" />
+                  <line x1="410" y1="380" x2="540" y2="310" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1.5" />
+                  <line x1="490" y1="520" x2="530" y2="440" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1.5" />
+                  <line x1="430" y1="530" x2="360" y2="620" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1.5" />
+                  <line x1="360" y1="620" x2="320" y2="680" stroke="rgba(99, 102, 241, 0.3)" stroke-width="1.5" />
+
+                  <!-- Constellation Nodes (Points of active contests) -->
+                  <!-- São Paulo -->
+                  <g class="cursor-pointer group/node map-pin-node" data-contest="sp">
+                    <circle cx="430" cy="530" r="15" fill="rgba(99, 102, 241, 0.15)" class="group-hover/node:fill-rgba(99,102,241,0.25) transition-colors" />
+                    <circle cx="430" cy="530" r="6" fill="#6366f1" />
+                    <circle cx="430" cy="530" r="12" fill="none" stroke="#6366f1" stroke-width="1.5" class="animate-ping opacity-50" />
+                  </g>
+
+                  <!-- Rio de Janeiro -->
+                  <g class="cursor-pointer group/node map-pin-node" data-contest="rj">
+                    <circle cx="490" cy="520" r="13" fill="rgba(59, 130, 246, 0.15)" />
+                    <circle cx="490" cy="520" r="5" fill="#3b82f6" />
+                    <circle cx="490" cy="520" r="10" fill="none" stroke="#3b82f6" stroke-width="1.5" class="animate-ping opacity-40" />
+                  </g>
+
+                  <!-- Brasília -->
+                  <g class="cursor-pointer group/node map-pin-node" data-contest="df">
+                    <circle cx="410" cy="380" r="17" fill="rgba(168, 85, 247, 0.15)" />
+                    <circle cx="410" cy="380" r="7" fill="#a855f7" />
+                    <circle cx="410" cy="380" r="14" fill="none" stroke="#a855f7" stroke-width="1.5" class="animate-ping opacity-50" />
+                  </g>
+
+                  <!-- Belo Horizonte -->
+                  <g class="cursor-pointer group/node map-pin-node" data-contest="mg">
+                    <circle cx="480" cy="450" r="11" fill="rgba(99, 102, 241, 0.12)" />
+                    <circle cx="480" cy="450" r="4.5" fill="#6366f1" />
+                    <circle cx="480" cy="450" r="9" fill="none" stroke="#6366f1" stroke-width="1" class="animate-pulse opacity-30" />
+                  </g>
+
+                  <!-- Santa Catarina -->
+                  <g class="cursor-pointer group/node map-pin-node" data-contest="sc">
+                    <circle cx="360" cy="620" r="11" fill="rgba(59, 130, 246, 0.12)" />
+                    <circle cx="360" cy="620" r="4.5" fill="#3b82f6" />
+                  </g>
+
+                  <!-- Salvador -->
+                  <g class="cursor-pointer group/node map-pin-node" data-contest="ba">
+                    <circle cx="540" cy="310" r="13" fill="rgba(236, 72, 153, 0.15)" />
+                    <circle cx="540" cy="310" r="5" fill="#ec4899" />
+                  </g>
+                </svg>
+
+                <!-- Floating premium dynamic tooltip on hover -->
+                <div id="map-dynamic-tooltip" class="absolute bg-white border border-slate-200/80 p-4.5 rounded-2xl shadow-xl backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 z-30 w-[260px] text-left space-y-3 border-t-4 border-t-indigo-650 scale-95 transform">
+                  <!-- Injected via JavaScript dynamically -->
+                </div>
+
+                <!-- Floating telemetry for high-tech aesthetics -->
+                <div class="absolute top-[8%] left-[2%] bg-white/80 border border-slate-200/50 backdrop-blur-sm rounded-xl p-2.5 text-[8.5px] font-mono text-slate-500 shadow-sm flex flex-col gap-0.5 pointer-events-none select-none">
+                  <span class="text-indigo-600 font-extrabold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span> RADAR_SCANNER: ONLINE</span>
+                  <span>GEO_POINTS: 6 ACTIVE HUBS</span>
+                  <span>ACCURACY_RATING: 99.98%</span>
+                </div>
+
+                <div class="absolute bottom-[8%] right-[2%] bg-white/80 border border-slate-200/50 backdrop-blur-sm rounded-xl p-2.5 text-[8.5px] font-mono text-slate-500 shadow-sm flex flex-col gap-0.5 pointer-events-none select-none">
+                  <span class="text-emerald-600 font-extrabold">DISTANCE_CALCULATOR: READY</span>
+                  <span>LOCK_STATE: APERITIVO PREVIEW</span>
+                  <span>PROXIMITY_LOCK: 50KM SUITE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. RADAR DE SIMULAÇÃO INTELIGENTE (LIGHT THEME) -->
       <section id="simulator" class="relative">
         
-        <!-- Fundo decorativo premium -->
-        <div class="absolute inset-0 bg-gradient-to-br from-indigo-950/20 via-slate-950/40 to-black rounded-3xl border border-white/15 -z-10 shadow-[0_30px_70px_rgba(0,0,0,0.9)] overflow-hidden">
-          <div class="absolute -right-20 -top-20 w-96 h-96 bg-indigo-600/5 rounded-full blur-[100px] animate-pulse"></div>
-          <div class="absolute -left-20 -bottom-20 w-96 h-96 bg-blue-600/5 rounded-full blur-[100px]"></div>
+        <!-- Fundo decorativo premium em Light Mode -->
+        <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-white to-[#fafafc] rounded-3xl border border-slate-200 -z-10 shadow-[0_20px_40px_rgba(15,23,42,0.04)] overflow-hidden">
+          <div class="absolute -right-20 -top-20 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px] animate-pulse"></div>
+          <div class="absolute -left-20 -bottom-20 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px]"></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 p-8 md:p-14 items-center">
           
           <div class="lg:col-span-5 space-y-6 text-left">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[9px] font-extrabold text-indigo-300 uppercase tracking-widest font-mono">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-[9px] font-extrabold text-indigo-600 uppercase tracking-widest font-mono">
               ★ Simulador Preditivo AI
             </div>
             
-            <h2 class="text-4xl font-outfit font-extrabold text-white leading-[1.1] tracking-tight">
+            <h2 class="text-4xl font-outfit font-extrabold text-slate-900 leading-[1.1] tracking-tight">
               Calcule seu futuro financeiro e estabilidade em segundos.
             </h2>
             
-            <p class="text-sm text-gray-400 leading-relaxed font-light">
+            <p class="text-sm text-slate-500 leading-relaxed font-light">
               Muitos concurseiros excelentes desistem ou perdem prazos por desconhecerem as vagas que combinam 100% com suas qualificações específicas. Descubra hoje mesmo o teto de remuneração que você pode atingir.
             </p>
 
-            <div class="border-t border-white/5 pt-6 grid grid-cols-2 gap-4">
+            <div class="border-t border-slate-200 pt-6 grid grid-cols-2 gap-4">
               <div class="space-y-1">
-                <span class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Base de Dados</span>
-                <p class="text-xs text-gray-300 font-semibold">3.800+ Editais Mapeados</p>
+                <span class="text-slate-400 text-[10px] uppercase font-bold tracking-widest">Base de Dados</span>
+                <p class="text-xs text-slate-700 font-semibold">3.800+ Editais Mapeados</p>
               </div>
               <div class="space-y-1">
-                <span class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Precisão de Filtro</span>
-                <p class="text-xs text-gray-300 font-semibold">Requisitos 100% Validados</p>
+                <span class="text-slate-400 text-[10px] uppercase font-bold tracking-widest">Precisão de Filtro</span>
+                <p class="text-xs text-slate-700 font-semibold">Requisitos 100% Validados</p>
               </div>
             </div>
           </div>
 
-          <!-- Formulário com Visual de Terminal/Console de Alta Tecnologia -->
-          <div class="lg:col-span-7 bg-[#060609] border border-white/10 p-6 md:p-8 rounded-2xl space-y-6 shadow-2xl relative">
-            <div class="absolute -top-3 left-6 px-3 py-1 bg-indigo-600 text-white text-[9px] font-extrabold rounded-md uppercase tracking-wider font-mono shadow-[0_0_15px_rgba(99,102,241,0.5)]">
+          <!-- Formulário Light de Alta Tecnologia -->
+          <div class="lg:col-span-7 bg-white border border-slate-200 p-6 md:p-8 rounded-2xl space-y-6 shadow-xl relative">
+            <div class="absolute -top-3 left-6 px-3 py-1 bg-slate-900 text-white text-[9px] font-extrabold rounded-md uppercase tracking-wider font-mono shadow-md">
               Console de Simulação
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               <div class="space-y-2">
-                <label class="block text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Escolaridade</label>
-                <select id="sim-school" class="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-indigo-500/50 hover:bg-white/[0.04] transition-all font-semibold">
+                <label class="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Escolaridade</label>
+                <select id="sim-school" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white hover:bg-slate-100/50 transition-all font-semibold shadow-sm">
                   <option value="Ensino Fundamental">Ensino Fundamental</option>
                   <option value="Ensino Médio" selected>Ensino Médio</option>
                   <option value="Técnico">Ensino Técnico</option>
@@ -521,8 +679,8 @@ const user = Astro.locals.user;
               </div>
 
               <div class="space-y-2">
-                <label class="block text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Estado Desejado</label>
-                <select id="sim-state" class="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-indigo-500/50 hover:bg-white/[0.04] transition-all font-semibold">
+                <label class="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Estado Desejado</label>
+                <select id="sim-state" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white hover:bg-slate-100/50 transition-all font-semibold shadow-sm">
                   <option value="Todos">Todos os Estados</option>
                   <option value="RJ">Rio de Janeiro</option>
                   <option value="SP">São Paulo</option>
@@ -533,8 +691,8 @@ const user = Astro.locals.user;
               </div>
 
               <div class="space-y-2">
-                <label class="block text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Área Temática</label>
-                <select id="sim-area" class="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-indigo-500/50 hover:bg-white/[0.04] transition-all font-semibold">
+                <label class="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Área Temática</label>
+                <select id="sim-area" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white hover:bg-slate-100/50 transition-all font-semibold shadow-sm">
                   <option value="Todas">Todas as Áreas</option>
                   <option value="Policial">Carreira Policial</option>
                   <option value="Fiscal">Área Fiscal / Contas</option>
@@ -547,36 +705,36 @@ const user = Astro.locals.user;
 
             </div>
 
-            <button id="run-simulation-btn" class="w-full bg-white text-black hover:bg-gray-100 font-extrabold py-3.5 rounded-xl transition-all shadow-[0_5px_20px_rgba(255,255,255,0.05)] flex items-center justify-center gap-2 active:scale-98 cursor-pointer text-xs uppercase tracking-wider">
+            <button id="run-simulation-btn" class="w-full bg-slate-900 text-white hover:bg-slate-800 font-extrabold py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 active:scale-98 cursor-pointer text-xs uppercase tracking-wider">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="animate-spin hidden mr-1" id="sim-spinner"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
               Iniciar Mapeamento Preditivo
             </button>
 
             <!-- Resultado de Simulação de Altíssima Sofisticação -->
-            <div id="simulation-result" class="hidden border-t border-white/5 pt-6 space-y-6 animate-fade-in text-left">
+            <div id="simulation-result" class="hidden border-t border-slate-100 pt-6 space-y-6 animate-fade-in text-left">
               
-              <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/[0.01] border border-white/5 p-5 rounded-2xl">
+              <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50 border border-slate-100 p-5 rounded-2xl">
                 
                 <div class="space-y-1">
-                  <span class="text-gray-500 text-[9px] uppercase font-bold tracking-widest">Status da Simulação</span>
+                  <span class="text-slate-400 text-[9px] uppercase font-bold tracking-widest">Status da Simulação</span>
                   <div class="flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-xs font-bold text-white">Excelente Compatibilidade</span>
+                    <span class="text-xs font-bold text-slate-800">Excelente Compatibilidade</span>
                   </div>
                 </div>
 
-                <!-- Circular Progress Ring / Meter para dar ar ultra tecnológico de AI -->
+                <!-- Circular Progress Ring / Meter in Light Mode -->
                 <div class="flex items-center gap-3">
                   <div class="relative w-12 h-12 flex items-center justify-center">
                     <svg class="w-12 h-12 transform -rotate-90">
-                      <circle cx="24" cy="24" r="20" class="stroke-white/5" stroke-width="3" fill="transparent"/>
-                      <circle cx="24" cy="24" r="20" class="stroke-indigo-500" stroke-width="3" fill="transparent" stroke-dasharray="125" stroke-dashoffset="25"/>
+                      <circle cx="24" cy="24" r="20" class="stroke-slate-200" stroke-width="3" fill="transparent"/>
+                      <circle cx="24" cy="24" r="20" class="stroke-indigo-600" stroke-width="3" fill="transparent" stroke-dasharray="125" stroke-dashoffset="25"/>
                     </svg>
-                    <span class="absolute text-[10px] font-bold font-mono text-white">83%</span>
+                    <span class="absolute text-[10px] font-bold font-mono text-slate-800">83%</span>
                   </div>
                   <div class="text-left leading-tight">
-                    <p class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold">Índice Geral</p>
-                    <p class="text-xs font-bold text-white">Aprovação Provável</p>
+                    <p class="text-[9px] text-slate-400 uppercase tracking-widest font-semibold">Índice Geral</p>
+                    <p class="text-xs font-bold text-slate-800">Aprovação Provável</p>
                   </div>
                 </div>
 
@@ -584,26 +742,26 @@ const user = Astro.locals.user;
 
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 
-                <div class="bg-gradient-to-b from-white/[0.02] to-transparent border border-white/5 p-4 rounded-xl space-y-1">
-                  <span class="text-gray-500 text-[8px] uppercase tracking-widest font-semibold">Editais Compatíveis</span>
-                  <p class="text-lg font-outfit font-extrabold text-white" id="sim-res-count">0</p>
+                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1 shadow-sm">
+                  <span class="text-slate-400 text-[8px] uppercase tracking-widest font-semibold font-mono">Editais Compatíveis</span>
+                  <p class="text-lg font-outfit font-extrabold text-slate-800" id="sim-res-count">0</p>
                 </div>
 
-                <div class="bg-gradient-to-b from-white/[0.02] to-transparent border border-white/5 p-4 rounded-xl space-y-1">
-                  <span class="text-gray-500 text-[8px] uppercase tracking-widest font-semibold">Remuneração Média</span>
-                  <p class="text-lg font-outfit font-extrabold text-emerald-400" id="sim-res-salary">R$ 0</p>
+                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1 shadow-sm">
+                  <span class="text-slate-400 text-[8px] uppercase tracking-widest font-semibold font-mono">Remuneração Média</span>
+                  <p class="text-lg font-outfit font-extrabold text-emerald-600" id="sim-res-salary">R$ 0</p>
                 </div>
 
-                <div class="bg-gradient-to-b from-white/[0.02] to-transparent border border-white/5 p-4 rounded-xl space-y-1">
-                  <span class="text-gray-500 text-[8px] uppercase tracking-widest font-semibold">Área Relevante</span>
-                  <p class="text-lg font-outfit font-extrabold text-indigo-400 truncate" id="sim-res-highlight">Fiscal</p>
+                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1 shadow-sm">
+                  <span class="text-slate-400 text-[8px] uppercase tracking-widest font-semibold font-mono">Área Relevante</span>
+                  <p class="text-lg font-outfit font-extrabold text-indigo-600 truncate" id="sim-res-highlight">Fiscal</p>
                 </div>
 
               </div>
 
               <!-- Mensagem de Conversão embutida no simulador -->
               <div class="text-center pt-2">
-                <button class="text-[10px] text-indigo-400 font-extrabold hover:text-indigo-300 transition-colors uppercase tracking-wider flex items-center gap-1.5 mx-auto trigger-global-conversion pointer-events-auto cursor-pointer">
+                <button class="text-[10px] text-indigo-600 font-extrabold hover:text-indigo-500 transition-colors uppercase tracking-wider flex items-center gap-1.5 mx-auto trigger-global-conversion pointer-events-auto cursor-pointer">
                   Desbloquear e salvar esta simulação em meu perfil
                   <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </button>
@@ -614,16 +772,16 @@ const user = Astro.locals.user;
         </div>
       </section>
 
-      <!-- 4. CALCULADORA DE CARREIRAS PREMIUM ("VEJA QUANTO VOCÊ PODE GANHAR") -->
+      <!-- 4. CALCULADORA DE CARREIRAS PREMIUM (WHITE THEME) -->
       <section id="salaries" class="space-y-16">
         
         <!-- Headers -->
         <div class="text-center space-y-4 max-w-2xl mx-auto">
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[9px] font-bold text-indigo-300 uppercase tracking-widest font-mono">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-[9px] font-bold text-indigo-600 uppercase tracking-widest font-mono">
             $ Retorno de Investimento
           </div>
-          <h2 class="text-4xl font-outfit font-extrabold text-white tracking-tight">O Potencial Financeiro do Seu Esforço</h2>
-          <p class="text-sm text-gray-400 leading-relaxed font-light">
+          <h2 class="text-4xl font-outfit font-extrabold text-slate-900 tracking-tight">O Potencial Financeiro do Seu Esforço</h2>
+          <p class="text-sm text-slate-500 leading-relaxed font-light">
             A carreira pública oferece patamares salariais e benefícios muito superiores à média da iniciativa privada. Veja os tetos de remuneração iniciais mapeados para perfis de alta performance.
           </p>
         </div>
@@ -632,61 +790,61 @@ const user = Astro.locals.user;
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           <!-- Card 1 -->
-          <div class="bg-[#070709] border border-white/10 p-8 rounded-2xl flex flex-col justify-between gap-10 group hover:border-indigo-500/40 hover:shadow-[0_15px_40px_rgba(99,102,241,0.05)] transition-all duration-500 relative overflow-hidden">
-            <div class="absolute -right-16 -top-16 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-all duration-500"></div>
+          <div class="bg-white border border-slate-200/80 p-8 rounded-2xl flex flex-col justify-between gap-10 group hover:border-indigo-400 hover:shadow-xl transition-all duration-500 relative overflow-hidden shadow-sm">
+            <div class="absolute -right-16 -top-16 w-32 h-32 bg-indigo-50 rounded-full blur-2xl group-hover:bg-indigo-100/50 transition-all duration-500"></div>
             
             <div class="space-y-4">
-              <span class="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-[9px] font-extrabold text-indigo-300 uppercase tracking-wider font-mono">Ensino Médio</span>
-              <h3 class="text-xl font-outfit font-bold text-white group-hover:text-indigo-400 transition-colors">Carreiras de Entrada</h3>
-              <p class="text-xs text-gray-500 leading-relaxed font-light">
+              <span class="px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-[9px] font-extrabold text-indigo-600 uppercase tracking-wider font-mono">Ensino Médio</span>
+              <h3 class="text-xl font-outfit font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Carreiras de Entrada</h3>
+              <p class="text-xs text-slate-500 leading-relaxed font-light">
                 Oportunidades administrativas de alta estabilidade em tribunais regionais, agências reguladoras municipais e bancos públicos federais que não exigem graduação superior.
               </p>
             </div>
             
-            <div class="space-y-1.5 border-t border-white/5 pt-5">
-              <span class="text-gray-500 text-[8px] uppercase tracking-widest font-bold block">Teto Inicial Estimado</span>
-              <span class="text-3xl font-outfit font-extrabold text-white tracking-tight font-mono">R$ 12.000,00</span>
+            <div class="space-y-1.5 border-t border-slate-100 pt-5">
+              <span class="text-slate-400 text-[8px] uppercase tracking-widest font-bold block">Teto Inicial Estimado</span>
+              <span class="text-3xl font-outfit font-extrabold text-slate-900 tracking-tight font-mono">R$ 12.000,00</span>
             </div>
           </div>
 
           <!-- Card 2 (Destaque Principal) -->
-          <div class="bg-[#070709] border-2 border-indigo-500 p-8 rounded-2xl flex flex-col justify-between gap-10 group hover:shadow-[0_20px_50px_rgba(99,102,241,0.15)] transition-all duration-500 relative overflow-hidden">
-            <div class="absolute -right-16 -top-16 w-32 h-32 bg-indigo-500/15 rounded-full blur-2xl transition-all duration-500"></div>
+          <div class="bg-white border-2 border-indigo-600 p-8 rounded-2xl flex flex-col justify-between gap-10 group hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+            <div class="absolute -right-16 -top-16 w-32 h-32 bg-indigo-50 rounded-full blur-2xl transition-all duration-500"></div>
             
             <!-- Badge de Destaque -->
-            <div class="absolute top-4 right-4 bg-indigo-500 text-white text-[8px] font-bold font-mono px-2 py-0.5 rounded-full uppercase tracking-wider shadow-lg shadow-indigo-600/30">
+            <div class="absolute top-4 right-4 bg-indigo-600 text-white text-[8px] font-bold font-mono px-2.5 py-0.8 rounded-full uppercase tracking-wider shadow-md">
               Alta Demanda
             </div>
 
             <div class="space-y-4">
-              <span class="px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-[9px] font-extrabold text-indigo-300 uppercase tracking-wider font-mono">Superior em TI</span>
-              <h3 class="text-xl font-outfit font-bold text-white">Tecnologia & Governança</h3>
-              <p class="text-xs text-gray-400 leading-relaxed font-light">
+              <span class="px-2.5 py-1 rounded-lg bg-indigo-100 border border-indigo-200 text-[9px] font-extrabold text-indigo-700 uppercase tracking-wider font-mono">Superior em TI</span>
+              <h3 class="text-xl font-outfit font-bold text-slate-900">Tecnologia & Governança</h3>
+              <p class="text-xs text-slate-500 leading-relaxed font-light">
                 Cargos de analista de sistemas, engenheiro de dados, cibersegurança e desenvolvedores em agências federais, tribunais de alta instância e conselhos reguladores nacionais.
               </p>
             </div>
             
-            <div class="space-y-1.5 border-t border-white/5 pt-5">
-              <span class="text-gray-500 text-[8px] uppercase tracking-widest font-bold block text-indigo-300">Teto Inicial Mapeado</span>
-              <span class="text-3xl font-outfit font-extrabold text-white tracking-tight font-mono bg-gradient-to-r from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent">R$ 27.000,00</span>
+            <div class="space-y-1.5 border-t border-slate-100 pt-5">
+              <span class="text-slate-400 text-[8px] uppercase tracking-widest font-bold block text-indigo-600">Teto Inicial Mapeado</span>
+              <span class="text-3xl font-outfit font-extrabold bg-gradient-to-r from-slate-900 to-indigo-700 bg-clip-text text-transparent tracking-tight font-mono">R$ 27.000,00</span>
             </div>
           </div>
 
           <!-- Card 3 -->
-          <div class="bg-[#070709] border border-white/10 p-8 rounded-2xl flex flex-col justify-between gap-10 group hover:border-indigo-500/40 hover:shadow-[0_15px_40px_rgba(99,102,241,0.05)] transition-all duration-500 relative overflow-hidden">
-            <div class="absolute -right-16 -top-16 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-all duration-500"></div>
+          <div class="bg-white border border-slate-200/80 p-8 rounded-2xl flex flex-col justify-between gap-10 group hover:border-indigo-400 hover:shadow-xl transition-all duration-500 relative overflow-hidden shadow-sm">
+            <div class="absolute -right-16 -top-16 w-32 h-32 bg-indigo-50 rounded-full blur-2xl group-hover:bg-indigo-100/50 transition-all duration-500"></div>
             
             <div class="space-y-4">
-              <span class="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-[9px] font-extrabold text-indigo-300 uppercase tracking-wider font-mono">Fisco e Controle</span>
-              <h3 class="text-xl font-outfit font-bold text-white group-hover:text-indigo-400 transition-colors">Auditorias & Fisco</h3>
-              <p class="text-xs text-gray-500 leading-relaxed font-light">
+              <span class="px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-[9px] font-extrabold text-indigo-600 uppercase tracking-wider font-mono">Fisco e Controle</span>
+              <h3 class="text-xl font-outfit font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Auditorias & Fisco</h3>
+              <p class="text-xs text-slate-500 leading-relaxed font-light">
                 Carreiras de elite que incluem auditores fiscais estaduais (Sefaz), auditores da Receita Federal do Brasil e analistas técnicos nos tribunais de contas (TCU e TCEs).
               </p>
             </div>
             
-            <div class="space-y-1.5 border-t border-white/5 pt-5">
-              <span class="text-gray-500 text-[8px] uppercase tracking-widest font-bold block">Teto Inicial Estimado</span>
-              <span class="text-3xl font-outfit font-extrabold text-white tracking-tight font-mono">R$ 35.000,00</span>
+            <div class="space-y-1.5 border-t border-slate-100 pt-5">
+              <span class="text-slate-400 text-[8px] uppercase tracking-widest font-bold block">Teto Inicial Estimado</span>
+              <span class="text-3xl font-outfit font-extrabold text-slate-900 tracking-tight font-mono">R$ 35.000,00</span>
             </div>
           </div>
 
@@ -694,50 +852,50 @@ const user = Astro.locals.user;
 
       </section>
 
-      <!-- 5. COMO FUNCIONA (FLUXO LINEAR MINIMALISTA E EXTREMAMENTE ELEGANTE) -->
+      <!-- 5. COMO FUNCIONA (WHITE THEME) -->
       <section id="how-it-works" class="space-y-16">
         
         <!-- Headers -->
         <div class="text-center space-y-4 max-w-2xl mx-auto">
-          <h2 class="text-3xl font-outfit font-extrabold text-white tracking-tight">O Processo por Trás da Nossa IA</h2>
-          <p class="text-sm text-gray-500 leading-relaxed max-w-xl mx-auto">
+          <h2 class="text-3xl font-outfit font-extrabold text-slate-900 tracking-tight">O Processo por Trás da Nossa IA</h2>
+          <p class="text-sm text-slate-500 leading-relaxed max-w-xl mx-auto font-light">
             Três passos simples que removem a burocracia e aproximam você da aprovação definitiva.
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-          <!-- Linhas de Conexão Estéticas entre os Passos (Ocultadas em Mobile) -->
-          <div class="absolute top-6 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-indigo-500/20 via-blue-500/20 to-transparent -z-10 hidden md:block"></div>
+          <!-- Linha de conexão em Light Theme -->
+          <div class="absolute top-6 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-indigo-500/20 via-blue-500/10 to-transparent -z-10 hidden md:block"></div>
 
           <!-- Passo 1 -->
           <div class="space-y-5 group text-left">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center font-outfit font-bold text-sm text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] transition-all duration-300 group-hover:scale-110">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-outfit font-bold text-sm text-indigo-600 shadow-sm transition-all duration-300 group-hover:scale-110">
               01
             </div>
-            <h3 class="text-lg font-outfit font-bold text-white group-hover:text-indigo-300 transition-colors">Perfil Rápido</h3>
-            <p class="text-xs text-gray-500 leading-relaxed font-light">
+            <h3 class="text-lg font-outfit font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">Perfil Rápido</h3>
+            <p class="text-xs text-slate-500 leading-relaxed font-light">
               Você preenche suas preferências de formação e localização geográfica. Menos de 30 segundos, sem dados sensíveis.
             </p>
           </div>
 
           <!-- Passo 2 -->
           <div class="space-y-5 group text-left">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center font-outfit font-bold text-sm text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] transition-all duration-300 group-hover:scale-110">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-outfit font-bold text-sm text-indigo-600 shadow-sm transition-all duration-300 group-hover:scale-110">
               02
             </div>
-            <h3 class="text-lg font-outfit font-bold text-white group-hover:text-indigo-300 transition-colors">Varredura e Cruzamento</h3>
-            <p class="text-xs text-gray-500 leading-relaxed font-light">
+            <h3 class="text-lg font-outfit font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">Varredura e Cruzamento</h3>
+            <p class="text-xs text-slate-500 leading-relaxed font-light">
               Nossa IA mapeia o edital, divide os cargos e compara com suas respostas, indicando sua afinidade e probabilidade de sucesso.
             </p>
           </div>
 
           <!-- Passo 3 -->
           <div class="space-y-5 group text-left">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center font-outfit font-bold text-sm text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] transition-all duration-300 group-hover:scale-110">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-outfit font-bold text-sm text-indigo-600 shadow-sm transition-all duration-300 group-hover:scale-110">
               03
             </div>
-            <h3 class="text-lg font-outfit font-bold text-white group-hover:text-indigo-300 transition-colors">Alertas Cirúrgicos</h3>
-            <p class="text-xs text-gray-500 leading-relaxed font-light">
+            <h3 class="text-lg font-outfit font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">Alertas Cirúrgicos</h3>
+            <p class="text-xs text-slate-500 leading-relaxed font-light">
               Você passa a receber e-mails cirúrgicos sempre que uma oportunidade ideal for publicada ou se as inscrições estiverem quase encerrando.
             </p>
           </div>
@@ -746,44 +904,44 @@ const user = Astro.locals.user;
 
       </section>
 
-      <!-- 6. DEPOIMENTOS DE ALTO IMPACTO -->
+      <!-- 6. DEPOIMENTOS DE ALTO IMPACTO (WHITE THEME) -->
       <section class="space-y-16">
         
         <!-- Headers -->
         <div class="text-center space-y-4 max-w-2xl mx-auto">
-          <h2 class="text-3xl font-outfit font-extrabold text-white tracking-tight">Depoimentos de Candidatos Aprovados</h2>
-          <p class="text-sm text-gray-500">Histórias reais de concurseiros que economizaram tempo e encontraram caminhos alternativos.</p>
+          <h2 class="text-3xl font-outfit font-extrabold text-slate-900 tracking-tight">Depoimentos de Candidatos Aprovados</h2>
+          <p class="text-sm text-slate-500">Histórias reais de concurseiros que economizaram tempo e encontraram caminhos alternativos.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           
           <!-- Depoimento 1 -->
-          <div class="bg-gradient-to-br from-white/[0.02] to-transparent border border-white/5 p-8 rounded-2xl space-y-6 text-left hover:border-indigo-500/20 transition-all duration-300">
-            <p class="text-xs text-gray-400 italic leading-relaxed font-light">
+          <div class="bg-white border border-slate-200/80 p-8 rounded-2xl space-y-6 text-left hover:border-indigo-400 transition-all duration-300 shadow-sm">
+            <p class="text-xs text-slate-500 italic leading-relaxed font-light">
               "Eu achava que só existiam os grandes certames concorridos de sempre. O EditalHub me revelou um edital menor do conselho profissional do meu estado que combinava exatamente com meu tecnólogo. Fui aprovado e convocado em 3 meses!"
             </p>
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center font-bold text-xs text-white">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-700 flex items-center justify-center font-bold text-xs text-white">
                 MB
               </div>
               <div class="leading-tight">
-                <h4 class="text-xs font-bold text-white">Marcos Barbosa</h4>
-                <p class="text-[9px] text-gray-500">Aprovado no CRF-RJ</p>
+                <h4 class="text-xs font-bold text-slate-800">Marcos Barbosa</h4>
+                <p class="text-[9px] text-slate-400">Aprovado no CRF-RJ</p>
               </div>
             </div>
           </div>
 
           <!-- Depoimento 2 -->
-          <div class="bg-gradient-to-br from-white/[0.02] to-transparent border border-white/5 p-8 rounded-2xl space-y-6 text-left hover:border-indigo-500/20 transition-all duration-300">
-            <p class="text-xs text-gray-400 italic leading-relaxed font-light">
+          <div class="bg-white border border-slate-200/80 p-8 rounded-2xl space-y-6 text-left hover:border-indigo-400 transition-all duration-300 shadow-sm">
+            <p class="text-xs text-slate-500 italic leading-relaxed font-light">
               "Com a rotina cansativa de estudos e trabalho, eu costumava esquecer datas importantes ou taxas de inscrição. O sistema de monitoramento automático por e-mail me salvou no concurso do Banco do Brasil. Serviço essencial para quem estuda de verdade."
             </p>
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center font-bold text-xs text-white">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-700 flex items-center justify-center font-bold text-xs text-white">
                 AS
               </div>
               <div class="leading-tight">
-                <h4 class="text-xs font-bold text-white">Aline Souza</h4>
+                <h4 class="text-xs font-bold text-slate-800">Aline Souza</h4>
                 <p class="text-[9px] text-gray-500">Aprovada no Banco do Brasil</p>
               </div>
             </div>
@@ -793,22 +951,22 @@ const user = Astro.locals.user;
 
       </section>
 
-      <!-- 7. CTA FINAL ULTRA-PREMIUM -->
-      <section class="text-center py-20 border-t border-white/5 relative">
-        <div class="absolute inset-0 bg-[radial-gradient(circle,rgba(99,102,241,0.06)_0%,rgba(0,0,0,0)_70%)] blur-2xl -z-10 animate-slow-glow"></div>
+      <!-- 7. CTA FINAL ULTRA-PREMIUM (WHITE THEME) -->
+      <section class="text-center py-20 border-t border-slate-200/80 relative">
+        <div class="absolute inset-0 bg-[radial-gradient(circle,rgba(99,102,241,0.03)_0%,rgba(0,0,0,0)_70%)] blur-2xl -z-10 animate-slow-glow"></div>
         
         <div class="space-y-8 max-w-3xl mx-auto">
-          <h2 class="text-4xl md:text-5xl font-outfit font-extrabold text-white tracking-tight leading-none">
+          <h2 class="text-4xl md:text-5xl font-outfit font-extrabold text-slate-900 tracking-tight leading-none">
             Pare de perder tempo com pesquisas manuais de editais.
           </h2>
           
-          <p class="text-sm text-gray-500 max-w-xl mx-auto leading-relaxed font-light">
+          <p class="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed font-light">
             Deixe nossa inteligência analisar diários oficiais complexos enquanto você foca no que realmente importa: a sua preparação intelectual.
           </p>
 
           <a 
             href="/cadastro" 
-            class="inline-flex items-center gap-2 bg-white text-black font-extrabold px-8 py-4 rounded-xl transition-all shadow-xl hover:bg-slate-100 active:scale-95 cursor-pointer text-xs uppercase tracking-wider"
+            class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold px-8 py-4 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer text-xs uppercase tracking-wider"
           >
             Descobrir Concursos Ideais Agora
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -819,54 +977,54 @@ const user = Astro.locals.user;
     </main>
 
     <!-- Sleek Minimal Footer -->
-    <footer class="w-full border-t border-white/5 bg-[#020203] py-12 text-center text-xs text-gray-600 mt-24">
+    <footer class="w-full border-t border-slate-200 bg-white py-12 text-center text-xs text-slate-500 mt-24">
       <div class="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-6">
         <p class="font-light">&copy; {new Date().getFullYear()} EditalHub. Tecnologia & Automação Inteligente de Editais.</p>
         <div class="flex gap-6 font-semibold">
-          <a href="/login" class="hover:text-white transition-colors">Administração</a>
-          <a href="/cadastro" class="hover:text-white transition-colors">Registrar Conta</a>
+          <a href="/login" class="hover:text-slate-850 transition-colors">Administração</a>
+          <a href="/cadastro" class="hover:text-slate-850 transition-colors">Registrar Conta</a>
         </div>
       </div>
     </footer>
 
-    <!-- GATILHO INTELIGENTE: MODAL DE CONVERSÃO ULTRA SOPHISTICATED -->
-    <div id="conversion-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
-      <div class="bg-[#08080a] border border-white/15 rounded-3xl p-8 max-w-md w-full mx-4 shadow-[0_20px_50px_rgba(0,0,0,0.9)] transform scale-95 transition-all duration-300 space-y-6 relative overflow-hidden">
+    <!-- GATILHO INTELIGENTE: MODAL DE CONVERSÃO LIGHT SOPHISTICATED -->
+    <div id="conversion-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+      <div class="bg-white border border-slate-200 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl transform scale-95 transition-all duration-300 space-y-6 relative overflow-hidden">
         
         <!-- Glowing edge decoration inside modal -->
-        <div class="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+        <div class="absolute top-0 left-0 w-full h-[3.5px] bg-gradient-to-r from-indigo-600 to-indigo-500"></div>
 
         <div class="flex items-center gap-3">
-          <div class="p-3 bg-indigo-500/10 rounded-2xl text-indigo-400 border border-indigo-500/20">
+          <div class="p-3 bg-indigo-50 rounded-2xl text-indigo-600 border border-indigo-100">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
           </div>
-          <h3 class="text-xl font-outfit font-extrabold text-white">Desbloqueie o potencial máximo da nossa IA</h3>
+          <h3 class="text-xl font-outfit font-extrabold text-slate-900">Desbloqueie o potencial máximo da nossa IA</h3>
         </div>
         
-        <p class="text-xs text-gray-400 leading-relaxed font-light">
+        <p class="text-xs text-slate-500 leading-relaxed font-light">
           Você experimentou nosso preview limitado. Ao realizar o cadastro gratuito, você habilita a análise profunda do diário oficial para seu CPF, além de:
         </p>
 
-        <div class="space-y-3.5 bg-white/[0.01] border border-white/5 rounded-2xl p-5 text-xs text-gray-300 font-medium">
+        <div class="space-y-3.5 bg-slate-50 border border-slate-100 rounded-2xl p-5 text-xs text-slate-700 font-medium">
           <div class="flex items-center gap-3">
-            <svg class="text-emerald-400 shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg class="text-emerald-600 shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Alertas personalizados em tempo real por E-mail</span>
           </div>
           <div class="flex items-center gap-3">
-            <svg class="text-emerald-400 shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg class="text-emerald-600 shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Acesso integral a todos os editais de bancas ativas</span>
           </div>
           <div class="flex items-center gap-3">
-            <svg class="text-emerald-400 shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg class="text-emerald-600 shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Calculadora avançada de compatibilidade profissional</span>
           </div>
         </div>
 
         <div class="flex gap-4 pt-2">
-          <button id="close-conversion-btn" class="flex-1 py-3.5 border border-white/10 hover:bg-white/[0.03] text-gray-400 hover:text-white font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer uppercase tracking-wider">
+          <button id="close-conversion-btn" class="flex-1 py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-800 font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer uppercase tracking-wider">
             Voltar
           </button>
-          <a href="/cadastro" class="flex-2 py-3.5 bg-white hover:bg-gray-100 text-black font-extrabold rounded-xl text-xs text-center transition-all shadow-xl active:scale-95 block uppercase tracking-wider">
+          <a href="/cadastro" class="flex-2 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-xs text-center transition-all shadow-md active:scale-95 block uppercase tracking-wider">
             Criar Conta Grátis
           </a>
         </div>
@@ -900,9 +1058,9 @@ const user = Astro.locals.user;
 
         // Estiliza o botão selecionado
         schoolFilters.querySelectorAll('button').forEach(b => {
-          b.className = "px-4 py-3 rounded-xl bg-white/[0.02] hover:bg-indigo-600/10 hover:border-indigo-500/40 hover:text-indigo-200 border border-white/5 text-xs font-semibold text-gray-400 transition-all cursor-pointer hover:shadow-[0_0_15px_rgba(99,102,241,0.1)] active:scale-95";
+          b.className = "px-4 py-3 rounded-xl bg-white hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 border border-slate-200 text-xs font-semibold text-slate-600 transition-all cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.03)] active:scale-95";
         });
-        btn.className = "px-4 py-3 rounded-xl bg-indigo-600/20 text-indigo-300 border border-indigo-500/60 text-xs font-bold transition-all shadow-[0_0_15px_rgba(99,102,241,0.15)] active:scale-95";
+        btn.className = "px-4 py-3 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-300 text-xs font-bold transition-all shadow-[0_4px_12px_rgba(99,102,241,0.08)] active:scale-95";
 
         // Filtra concursos correspondentes
         const filtered = contests.filter(c => c.escolaridade.toLowerCase() === level.toLowerCase());
@@ -928,8 +1086,8 @@ const user = Astro.locals.user;
         cardsContainer.innerHTML = '';
         if (filtered.length === 0) {
           cardsContainer.innerHTML = `
-            <div class="col-span-1 md:col-span-3 text-center py-12 bg-white/[0.01] border border-white/5 rounded-2xl p-6">
-              <p class="text-xs text-gray-500">Nenhum concurso ativo processado para essa escolaridade no momento. Utilize o simulador avançado abaixo.</p>
+            <div class="col-span-1 md:col-span-3 text-center py-12 bg-slate-50 border border-slate-100 rounded-2xl p-6">
+              <p class="text-xs text-slate-400">Nenhum concurso ativo processado para essa escolaridade no momento. Utilize o simulador avançado abaixo.</p>
             </div>
           `;
           return;
@@ -938,33 +1096,33 @@ const user = Astro.locals.user;
         // Exibe top 3
         filtered.slice(0, 3).forEach(c => {
           const card = document.createElement('div');
-          card.className = "bg-[#070709] border border-white/10 p-6 rounded-2xl flex flex-col justify-between gap-6 relative overflow-hidden group hover:border-indigo-500/40 hover:shadow-[0_10px_30px_rgba(99,102,241,0.05)] transition-all duration-300 cursor-pointer text-left";
+          card.className = "bg-white border border-slate-200/80 p-6 rounded-2xl flex flex-col justify-between gap-6 relative overflow-hidden group hover:border-indigo-400 hover:shadow-xl transition-all duration-300 cursor-pointer text-left shadow-sm";
           
           card.innerHTML = `
             <div class="space-y-4">
               <div class="flex justify-between items-center gap-3">
-                <span class="px-2.5 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[8px] font-bold rounded uppercase tracking-wider font-mono">
+                <span class="px-2.5 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[8px] font-bold rounded uppercase tracking-wider font-mono">
                   ${c.edital.organizadora.nome}
                 </span>
-                <span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1 select-none font-mono">
+                <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1 select-none font-mono">
                   ✦ Match ${c.compatibilidade}%
                 </span>
               </div>
 
               <div class="space-y-1">
-                <h4 class="text-sm font-outfit font-extrabold text-white group-hover:text-indigo-400 transition-colors line-clamp-1">${c.nome_concurso}</h4>
-                <p class="text-[10px] text-gray-500 font-semibold">Estado: <span class="text-gray-300 font-bold">${c.estado}</span> | Área: <span class="text-gray-300 font-bold">${c.area}</span></p>
+                <h4 class="text-sm font-outfit font-extrabold text-slate-800 group-hover:text-indigo-600 transition-colors line-clamp-1">${c.nome_concurso}</h4>
+                <p class="text-[10px] text-slate-400 font-semibold">Estado: <span class="text-slate-600 font-bold">${c.estado}</span> | Área: <span class="text-slate-600 font-bold">${c.area}</span></p>
               </div>
 
-              <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed font-light">${c.resumo}</p>
+              <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed font-light">${c.resumo}</p>
             </div>
 
-            <div class="flex justify-between items-center border-t border-white/5 pt-4">
+            <div class="flex justify-between items-center border-t border-slate-100 pt-4">
               <div class="flex flex-col">
-                <span class="text-gray-600 text-[8px] uppercase tracking-widest font-bold">Salário Inicial</span>
-                <span class="text-sm font-extrabold text-white font-mono">R$ ${c.salario_inicial.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <span class="text-slate-400 text-[8px] uppercase tracking-widest font-bold">Salário Inicial</span>
+                <span class="text-sm font-extrabold text-slate-800 font-mono">R$ ${c.salario_inicial.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </div>
-              <button class="px-3.5 py-2 bg-white/5 group-hover:bg-white group-hover:text-black rounded-lg text-[9px] font-bold transition-all duration-300 flex items-center gap-1 trigger-conversion cursor-pointer uppercase tracking-wider border border-white/10 group-hover:border-transparent">
+              <button class="px-3.5 py-2 bg-slate-50 group-hover:bg-slate-900 group-hover:text-white rounded-lg text-[9px] font-bold transition-all duration-300 flex items-center gap-1 trigger-conversion cursor-pointer uppercase tracking-wider border border-slate-200 group-hover:border-transparent">
                 Detalhes
                 <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </button>
@@ -974,7 +1132,7 @@ const user = Astro.locals.user;
         });
 
         // Adiciona ouvintes para disparo do modal
-        cardsContainer.querySelectorAll('.trigger-conversion, .bg-[#070709]').forEach(el => {
+        cardsContainer.querySelectorAll('.trigger-conversion, .bg-white').forEach(el => {
           el.addEventListener('click', (ev) => {
             ev.stopPropagation();
             openConversionModal();
@@ -1027,7 +1185,6 @@ const user = Astro.locals.user;
       const simResHighlight = document.getElementById('sim-res-highlight');
 
       runSimBtn?.addEventListener('click', () => {
-        // Simulação de delay tecnológico para parecer processamento AI real
         if (simSpinner) simSpinner.classList.remove('hidden');
         runSimBtn.disabled = true;
 
@@ -1065,6 +1222,126 @@ const user = Astro.locals.user;
           }
         }, 800);
       });
+
+      // 6. Mapa Interativo (Fase 15)
+      const mapContestData = {
+        sp: {
+          orgao: "Tribunal de Justiça de SP",
+          banca: "Vunesp",
+          salario: "R$ 7.200,00",
+          vagas: "150 vagas",
+          status: "Inscrições Abertas",
+          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
+        },
+        rj: {
+          orgao: "Polícia Civil do Estado do RJ",
+          banca: "FGV",
+          salario: "R$ 6.200,00",
+          vagas: "120 vagas",
+          status: "Inscrições Abertas",
+          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
+        },
+        df: {
+          orgao: "Tribunal de Contas da União",
+          banca: "FGV",
+          salario: "R$ 26.800,00",
+          vagas: "20 vagas",
+          status: "Inscrições Abertas",
+          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
+        },
+        mg: {
+          orgao: "Prefeitura de Belo Horizonte",
+          banca: "IBGP",
+          salario: "R$ 4.800,00",
+          vagas: "300 vagas",
+          status: "Inscrições Abertas",
+          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
+        },
+        sc: {
+          orgao: "Tribunal de Justiça de SC",
+          banca: "FGV",
+          salario: "R$ 8.500,00",
+          vagas: "45 vagas",
+          status: "Inscrições Abertas",
+          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
+        },
+        ba: {
+          orgao: "Banco do Brasil S.A. (BA)",
+          banca: "Cesgranrio",
+          salario: "R$ 5.900,00",
+          vagas: "80 vagas",
+          status: "Inscrições Abertas",
+          classeStatus: "bg-emerald-50 text-emerald-600 border-emerald-100"
+        }
+      };
+
+      const mapPins = document.querySelectorAll('.map-pin-node');
+      const mapTooltip = document.getElementById('map-dynamic-tooltip');
+      const teaserSvgMap = document.getElementById('teaser-svg-map');
+
+      mapPins.forEach(pin => {
+        pin.addEventListener('mouseenter', (e) => {
+          const contestKey = pin.getAttribute('data-contest');
+          const data = mapContestData[contestKey];
+          if (!data) return;
+
+          mapTooltip.innerHTML = `
+            <div class="space-y-3.5">
+              <div class="flex justify-between items-center gap-2">
+                <span class="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[8.5px] font-bold rounded uppercase tracking-wider font-mono">
+                  ` + data.banca + `
+                </span>
+                <span class="px-2 py-0.5 ` + data.classeStatus + ` border text-[8.5px] font-bold rounded uppercase tracking-wider font-mono">
+                  ` + data.status + `
+                </span>
+              </div>
+              <div class="space-y-0.5">
+                <h4 class="text-xs font-outfit font-extrabold text-slate-800 line-clamp-1 leading-tight">` + data.orgao + `</h4>
+                <p class="text-[9px] text-slate-400 font-semibold font-mono">Vagas: <span class="text-slate-600 font-bold">` + data.vagas + `</span></p>
+              </div>
+              <div class="flex justify-between items-center border-t border-slate-100 pt-2.5">
+                <div class="flex flex-col">
+                  <span class="text-slate-400 text-[8px] uppercase tracking-widest font-bold">Salário</span>
+                  <span class="text-xs font-extrabold text-slate-800 font-mono">` + data.salario + `</span>
+                </div>
+                <div class="text-right">
+                  <span class="inline-flex items-center gap-0.5 text-[8.5px] font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100/50 px-1.5 py-0.5 rounded-full select-none">
+                    🔒 Proximidade & Rotas
+                  </span>
+                </div>
+              </div>
+            </div>
+          `;
+
+          const parentRect = teaserSvgMap.parentElement.getBoundingClientRect();
+          const pinRect = pin.getBoundingClientRect();
+          
+          const left = pinRect.left - parentRect.left + (pinRect.width / 2) - (mapTooltip.offsetWidth / 2);
+          const top = pinRect.top - parentRect.top - mapTooltip.offsetHeight - 12;
+
+          mapTooltip.style.left = left + 'px';
+          mapTooltip.style.top = top + 'px';
+
+          mapTooltip.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+          mapTooltip.classList.add('opacity-100', 'scale-100');
+        });
+
+        pin.addEventListener('mouseleave', () => {
+          mapTooltip.classList.remove('opacity-100', 'scale-100');
+          mapTooltip.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+        });
+
+        pin.addEventListener('click', (e) => {
+          e.preventDefault();
+          openConversionModal();
+        });
+      });
+
+      if (mapTooltip) {
+        mapTooltip.addEventListener('click', (e) => {
+          openConversionModal();
+        });
+      }
     </script>
   </body>
 </html>
