@@ -3,15 +3,23 @@ import prisma from '../../lib/prisma';
 
 export const GET: APIRoute = async () => {
   try {
-    // 1. Conta quantos editais válidos estão pendentes de processamento de IA
-    const pendingCount = await prisma.edital.count({
+    // 1. Conta quantos editais válidos estão na fila de processamento (pendente ou erro)
+    const pendingAndErrorCount = await prisma.edital.count({
+      where: {
+        is_valido: true,
+        status_processamento: { in: ['pendente', 'erro'] }
+      }
+    });
+
+    // 2. Conta quantos editais estão estritamente pendentes de IA
+    const strictlyPendingCount = await prisma.edital.count({
       where: {
         is_valido: true,
         status_processamento: 'pendente'
       }
     });
 
-    // 2. Busca o último registro de sincronização iniciada
+    // 3. Busca o último registro de sincronização iniciada
     const lastSyncLog = await prisma.logAuditoria.findFirst({
       where: {
         acao: 'sincronizacao_iniciada'
@@ -62,13 +70,13 @@ export const GET: APIRoute = async () => {
         // Se já existe log de finalização posterior à data de início, o sync concluiu!
         active = false;
         stage = 'idle';
-        message = 'Sincronização concluída com sucesso!';
+        message = completionLog.detalhes || 'Sincronização concluída com sucesso!';
       } else if (diffMinutes < 15) {
         // Se ainda não concluiu e está dentro de 15 minutos, consideramos ativo
         active = true;
-        if (pendingCount > 0) {
+        if (pendingAndErrorCount > 0) {
           stage = 'processing';
-          message = `Processando ${pendingCount} edital(ais) com Inteligência Artificial na Azure...`;
+          message = `Processando ${pendingAndErrorCount} edital(ais) com Inteligência Artificial na Azure...`;
         } else {
           stage = 'scraping';
           message = 'Buscando novos editais nos portais das bancas na Azure...';
@@ -80,36 +88,53 @@ export const GET: APIRoute = async () => {
         message = 'Sincronização finalizada por tempo limite.';
       }
 
-      // Sempre calcula o resumo detalhado para a última sincronização (ativa ou recém-concluída)
-      const editaisSinceSync = await prisma.edital.findMany({
+      // 1. Editais novos coletados neste sync
+      const editaisNovos = await prisma.edital.findMany({
         where: {
           data_criacao: {
             gte: lastSyncLog.data_criacao
           }
         }
       });
+      const novosIds = editaisNovos.map(e => e.id);
+
+      // 2. Logs de processamento de editais ocorridos durante este sync
+      const processingLogs = await prisma.logAuditoria.findMany({
+        where: {
+          acao: { in: ['processamento_edital_sucesso', 'processamento_edital_erro'] },
+          data_criacao: {
+            gte: lastSyncLog.data_criacao
+          }
+        }
+      });
+
+      // Filtra logs de editais que já são novos (para não contar duas vezes)
+      const logsEditaisAntigos = processingLogs.filter(log => log.entidade_id && !novosIds.includes(log.entidade_id));
+
+      const antigosSucessos = logsEditaisAntigos.filter(l => l.acao === 'processamento_edital_sucesso').length;
+      const antigosFalhas = logsEditaisAntigos.filter(l => l.acao === 'processamento_edital_erro').length;
 
       summary = {
-        total: editaisSinceSync.length,
-        valid: editaisSinceSync.filter(e => e.is_valido).length,
-        ignored: editaisSinceSync.filter(e => !e.is_valido).length,
-        processed: editaisSinceSync.filter(e => e.is_valido && e.status_processamento === 'processado').length,
-        failed: editaisSinceSync.filter(e => e.is_valido && e.status_processamento === 'erro').length
+        total: editaisNovos.length + antigosSucessos + antigosFalhas,
+        valid: editaisNovos.filter(e => e.is_valido).length,
+        ignored: editaisNovos.filter(e => !e.is_valido).length,
+        processed: editaisNovos.filter(e => e.is_valido && e.status_processamento === 'processado').length + antigosSucessos,
+        failed: editaisNovos.filter(e => e.is_valido && e.status_processamento === 'erro').length + antigosFalhas
       };
     }
 
     // Caso o status_processamento ainda acuse pendentes mas não haja log de sync recente nem erro,
-    // ainda consideramos ativo no processamento de IA
-    if (!active && pendingCount > 0 && !errorDetails) {
+    // ainda consideramos ativo no processamento de IA apenas se houver editais estritamente 'pendentes'
+    if (!active && strictlyPendingCount > 0 && !errorDetails) {
       active = true;
       stage = 'processing';
-      message = `Processando ${pendingCount} edital(ais) com Inteligência Artificial pendentes...`;
+      message = `Processando ${strictlyPendingCount} edital(ais) com Inteligência Artificial pendentes...`;
     }
 
     return new Response(JSON.stringify({
       active,
       stage,
-      pendingCount,
+      pendingCount: pendingAndErrorCount,
       message,
       summary,
       error: errorDetails,

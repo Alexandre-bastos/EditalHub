@@ -74,15 +74,43 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       const runSingleBackground = async () => {
         try {
           await processEdital(editalId);
+          
+          // Registra sucesso individual na auditoria
           await prisma.logAuditoria.create({
-            usuario_id: userId,
-            usuario_nome: userNome,
-            acao: 'sincronizacao_concluida',
-            entidade: 'edital',
-            detalhes: `Processamento local do edital ID ${editalId} concluído com sucesso.`
+            data: {
+              usuario_id: userId,
+              usuario_nome: userNome,
+              acao: 'processamento_edital_sucesso',
+              entidade: 'edital',
+              entidade_id: editalId,
+              detalhes: `Processamento local do edital ID ${editalId} concluído com sucesso.`
+            }
+          });
+
+          await prisma.logAuditoria.create({
+            data: {
+              usuario_id: userId,
+              usuario_nome: userNome,
+              acao: 'sincronizacao_concluida',
+              entidade: 'edital',
+              detalhes: `Processamento local do edital ID ${editalId} concluído.`
+            }
           });
         } catch (err: any) {
           console.error(`Erro no processamento local do edital ${editalId}:`, err);
+          
+          // Registra erro individual na auditoria
+          await prisma.logAuditoria.create({
+            data: {
+              usuario_id: userId,
+              usuario_nome: userNome,
+              acao: 'processamento_edital_erro',
+              entidade: 'edital',
+              entidade_id: editalId,
+              detalhes: `Erro no processamento local do edital ID ${editalId}: ${err.message}`
+            }
+          });
+
           await prisma.logAuditoria.create({
             data: {
               usuario_id: userId,
@@ -109,6 +137,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         const editais = await prisma.edital.findMany({
           where: { 
             status_processamento: { in: ['pendente', 'erro'] },
+            is_valido: true,
             nome_arquivo: { not: null }
           }
         });
@@ -126,30 +155,55 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           return;
         }
 
-        const results = [];
+        let successCount = 0;
+        let failedCount = 0;
+
         for (const edital of editais) {
           try {
             await processEdital(edital.id);
-            results.push({ id: edital.id, success: true });
-            
-            // Delay de 5 segundos entre chamadas para evitar rate limit do Gemini
-            if (editais.length > 1) {
-              await new Promise(resolve => setTimeout(resolve, 5000));
-            }
-          } catch (err) {
+            successCount++;
+
+            // Registra sucesso individual na auditoria
+            await prisma.logAuditoria.create({
+              data: {
+                usuario_id: userId,
+                usuario_nome: userNome,
+                acao: 'processamento_edital_sucesso',
+                entidade: 'edital',
+                entidade_id: edital.id,
+                detalhes: `Processamento local do edital "${edital.nome_edital}" (ID: ${edital.id}) concluído com sucesso.`
+              }
+            });
+          } catch (err: any) {
             console.error(`Erro local no edital ${edital.id}:`, err);
-            results.push({ id: edital.id, success: false, error: err instanceof Error ? err.message : String(err) });
+            failedCount++;
+
+            // Registra erro individual na auditoria
+            await prisma.logAuditoria.create({
+              data: {
+                usuario_id: userId,
+                usuario_nome: userNome,
+                acao: 'processamento_edital_erro',
+                entidade: 'edital',
+                entidade_id: edital.id,
+                detalhes: `Erro no processamento local do edital "${edital.nome_edital}" (ID: ${edital.id}): ${err.message}`
+              }
+            });
+          }
+
+          // Delay de 5 segundos entre chamadas para evitar rate limit do Gemini
+          if (editais.length > 1) {
+            await new Promise(resolve => setTimeout(resolve, 5000));
           }
         }
         
-        const successCount = results.filter(r => r.success).length;
         await prisma.logAuditoria.create({
           data: {
             usuario_id: userId,
             usuario_nome: userNome,
             acao: 'sincronizacao_concluida',
             entidade: 'edital',
-            detalhes: `Processamento local concluído: ${successCount} sucesso(s), ${results.length - successCount} erro(s).`
+            detalhes: `Processamento local concluído: ${successCount} sucesso(s), ${failedCount} falha(s).`
           }
         });
       } catch (batchErr: any) {

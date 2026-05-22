@@ -200,6 +200,11 @@ const organizadoras = await prisma.organizadora.findMany({
                       {edital.status_processamento}
                     </span>
                   </div>
+                  {edital.status_processamento === 'erro' && edital.erro_mensagem && (
+                    <p class="text-[10px] text-red-500 font-light mt-1 max-w-[200px] leading-tight break-words" title={edital.erro_mensagem}>
+                      {edital.erro_mensagem}
+                    </p>
+                  )}
                 </div>
               </td>
               <td class="px-6 py-4 text-right">
