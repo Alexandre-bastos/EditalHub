@@ -80,14 +80,20 @@ export async function scrapeAll(organizadoraId?: string) {
           const b = await getBrowser();
           await internalScrapeVunesp(b, org);
         } else if (nome.includes('cebraspe')) {
-          await internalScrapeCebraspe(org);
+          const b = await getBrowser();
+          await internalScrapeCebraspe(b, org);
         } else if (nome.includes('chagas') || nome.includes('fcc')) {
           await internalScrapeFCC(org);
         } else if (nome.includes('cesgranrio')) {
           const b = await getBrowser();
           await internalScrapeCesgranrio(b, org);
+        } else if (nome.includes('aocp')) {
+          const b = await getBrowser();
+          await internalScrapeAocp(b, org);
         } else {
-          console.log(`Banca ${org.nome} ainda não possui scraper específico. Pulando...`);
+          console.log(`\nBanca "${org.nome}" não possui scraper dedicado. Acionando coletor genérico...`);
+          const b = await getBrowser();
+          await internalScrapeGeneric(b, org);
         }
       } catch (err: any) {
         console.error(`Erro ao processar banca ${org.nome}:`, err.message);
@@ -137,26 +143,43 @@ async function internalScrapeFgv(org: any) {
 }
 
 async function internalScrapeVunesp(browser: Browser, org: any) {
-  console.log(`\n> Coletando Vunesp: ${org.site_url}`);
-  const page = await browser.newPage();
+  const url = 'https://www.vunesp.com.br/busca/concurso/inscricoes%20abertas';
+  console.log(`\n> Coletando Vunesp (via Playwright): ${url}`);
+  
+  const context = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    viewport: { width: 1280, height: 800 },
+    locale: 'pt-BR'
+  });
+  
+  const page = await context.newPage();
   try {
-    await page.goto(org.site_url, { waitUntil: 'networkidle', timeout: 60000 });
-    await page.waitForSelector('section.concurso-item', { timeout: 10000 }).catch(() => {});
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 }).catch(e => {
+      console.log(`  [Vunesp] Aviso de acesso lento/bloqueio: ${e.message}`);
+    });
+    
+    // Aguarda o seletor box-concurso carregar se o site respondeu
+    await page.waitForSelector('section.box-concurso', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(2000);
     
     const content = await page.content();
     const $ = cheerio.load(content);
     const items: any[] = [];
     
-    $('section.concurso-item').each((i, el) => {
-      const nome = $(el).find('h3').text().trim();
-      const href = $(el).find('a[title^="Saiba mais"]').attr('href');
-      if (nome && href) items.push({ nome, link: resolveUrl(href, 'https://www.vunesp.com.br') });
+    $('section.box-concurso').each((i, el) => {
+      const nome = $(el).find('h4').text().trim();
+      const href = $(el).find('a').first().attr('href');
+      if (nome && href) {
+        items.push({ nome, link: resolveUrl(href, 'https://www.vunesp.com.br') });
+      }
     });
+
+    console.log(`  Identificados ${items.length} editais ativos na busca da Vunesp.`);
 
     for (const item of items) {
       await processGenericContest({ page }, org, item.nome, item.link, async ($c, p) => {
-        await p.click('a:has-text("Editais e Documentos")', { timeout: 3000 }).catch(() => {});
-        await p.waitForTimeout(1000);
+        await p.click('a:has-text("Editais e Documentos")', { timeout: 4000 }).catch(() => {});
+        await p.waitForTimeout(1500);
         const $u = cheerio.load(await p.content());
         const link = $u('a[href$=".pdf"]').filter((i, el) => {
           const t = $u(el).text().toLowerCase();
@@ -167,34 +190,70 @@ async function internalScrapeVunesp(browser: Browser, org: any) {
     }
   } finally {
     await page.close();
+    await context.close();
   }
 }
 
-async function internalScrapeCebraspe(org: any) {
-  console.log(`\n> Coletando Cebraspe (via HTTP): ${org.site_url}`);
-  const res = await axios.get(org.site_url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    },
-    timeout: 30000
-  });
-  const $ = cheerio.load(res.data);
-  const items: any[] = [];
+async function internalScrapeCebraspe(browser: Browser, org: any) {
+  const targetUrl = 'https://www.cebraspe.org.br/concursos/';
+  console.log(`\n> Coletando Cebraspe (via Playwright): ${targetUrl}`);
   
-  $('a[href*="/concursos/"]').each((i, el) => {
-    const nome = $(el).text().trim();
-    const href = $(el).attr('href');
-    if (nome && href && nome.length > 10) items.push({ nome, link: resolveUrl(href, 'https://www.cebraspe.org.br') });
+  const context = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    viewport: { width: 1280, height: 800 }
   });
+  
+  const page = await context.newPage();
+  try {
+    await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 45000 });
+    await page.waitForTimeout(4000);
+    
+    const content = await page.content();
+    const $ = cheerio.load(content);
+    const items: any[] = [];
+    
+    $('a').each((i, el) => {
+      const href = $(el).attr('href') || '';
+      const text = $(el).text().trim();
+      
+      if (href.includes('/concursos/') && 
+          !href.endsWith('/concursos/') && 
+          !href.includes('/inscricoes-abertas/') && 
+          !href.includes('/em-andamento/') && 
+          !href.includes('/novos') && 
+          !href.includes('/encerrado') &&
+          text.length > 5) {
+        
+        let nome = $(el).parent().find('h3.q_circle_title').text().trim();
+        if (!nome) {
+          nome = $(el).parent().parent().find('h3.q_circle_title').text().trim();
+        }
+        if (!nome) {
+          nome = text;
+        }
 
-  for (const item of items) {
-    await processGenericContest({ isAxios: true }, org, item.nome, item.link, async ($c) => {
-      const link = $c('a').filter((i, el) => {
-        const t = $c(el).text().toLowerCase();
-        return ((t.includes('edital') && t.includes('abertura')) || t.includes('edital nº 1')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
-      }).first();
-      return link.length > 0 ? resolveUrl(link.attr('href'), 'https://www.cebraspe.org.br') : null;
+        if (nome.toLowerCase() === 'mais informações' || nome.toLowerCase() === 'mais informações...') {
+          return;
+        }
+
+        items.push({ nome, link: resolveUrl(href, 'https://www.cebraspe.org.br') });
+      }
     });
+
+    console.log(`  Identificados ${items.length} links de editais no portal Cebraspe.`);
+
+    for (const item of items) {
+      await processGenericContest({ page }, org, item.nome, item.link, async ($c) => {
+        const link = $c('a').filter((i, el) => {
+          const t = $c(el).text().toLowerCase();
+          return ((t.includes('edital') && t.includes('abertura')) || t.includes('edital nº 1')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
+        }).first();
+        return link.length > 0 ? resolveUrl(link.attr('href'), 'https://www.cebraspe.org.br') : null;
+      });
+    }
+  } finally {
+    await page.close();
+    await context.close();
   }
 }
 
@@ -237,10 +296,16 @@ async function internalScrapeFCC(org: any) {
 }
 
 async function internalScrapeCesgranrio(browser: Browser, org: any) {
-  console.log(`\n> Coletando Cesgranrio: ${org.site_url}`);
-  const page = await browser.newPage();
+  console.log(`\n> Coletando Cesgranrio (via Playwright): ${org.site_url}`);
+  const context = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    viewport: { width: 1280, height: 800 }
+  });
+  const page = await context.newPage();
   try {
-    await page.goto(org.site_url, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.goto(org.site_url, { waitUntil: 'networkidle', timeout: 45000 });
+    await page.waitForTimeout(3000);
+    
     const $ = cheerio.load(await page.content());
     const items: any[] = [];
     
@@ -250,24 +315,139 @@ async function internalScrapeCesgranrio(browser: Browser, org: any) {
       if (nome && href) items.push({ nome, link: resolveUrl(href, 'https://www.cesgranrio.org.br') });
     });
 
+    console.log(`  Encontrados ${items.length} concursos Cesgranrio ativos.`);
+
     for (const item of items) {
       await processGenericContest({ page }, org, item.nome, item.link, async ($c, p) => {
+        // 1. Tenta buscar pelo link do portal
         const portalLink = $c('a[href*="portal"]').first().attr('href');
         if (portalLink) {
-          await p.goto(portalLink, { waitUntil: 'networkidle' });
-          await p.waitForSelector('.list-group-item', { timeout: 10000 }).catch(() => {});
-          const $p = cheerio.load(await p.content());
-          const link = $p('a[href$=".pdf"]').filter((i, el) => {
-            const t = $p(el).text().toLowerCase();
-            return t.includes('edital') && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
-          }).first();
-          return link.length > 0 ? resolveUrl(link.attr('href'), 'https://concursos.cesgranrio.org.br') : null;
+          try {
+            await p.goto(portalLink, { waitUntil: 'networkidle', timeout: 20000 });
+            await p.waitForSelector('.list-group-item', { timeout: 8000 }).catch(() => {});
+            const $p = cheerio.load(await p.content());
+            const link = $p('a[href$=".pdf"]').filter((i, el) => {
+              const t = $p(el).text().toLowerCase();
+              return t.includes('edital') && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
+            }).first();
+            if (link.length > 0) return resolveUrl(link.attr('href'), 'https://concursos.cesgranrio.org.br');
+          } catch (err: any) {
+            console.log(`    [Cesgranrio] Falha ao ler portal: ${err.message}`);
+          }
+        }
+        
+        // 2. Fallback: Procura por link direto de edital em PDF na própria página
+        const directPdf = $c('a[href$=".pdf"]').filter((i, el) => {
+          const t = $c(el).text().toLowerCase();
+          return (t.includes('edital') || t.includes('abertura')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
+        }).first();
+        if (directPdf.length > 0) {
+          return resolveUrl(directPdf.attr('href'), 'https://www.cesgranrio.org.br');
         }
         return null;
       });
     }
   } finally {
     await page.close();
+    await context.close();
+  }
+}
+
+async function internalScrapeAocp(browser: Browser, org: any) {
+  const targetUrl = 'https://www.institutoaocp.org.br';
+  console.log(`\n> Coletando Instituto AOCP (via Playwright): ${targetUrl}`);
+  
+  const context = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    viewport: { width: 1280, height: 800 }
+  });
+  const page = await context.newPage();
+  
+  try {
+    await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 45000 }).catch(e => {
+      console.log(`  [AOCP] Aviso de carregamento lento/bloqueio: ${e.message}`);
+    });
+    await page.waitForTimeout(3000);
+    
+    const $ = cheerio.load(await page.content());
+    const items: any[] = [];
+    
+    $('a').each((i, el) => {
+      const text = $(el).text().trim();
+      const href = $(el).attr('href') || '';
+      
+      if ((href.includes('concurso.jsp') || href.includes('concurso/')) && text.length > 10) {
+        items.push({ nome: text, link: resolveUrl(href, 'https://www.institutoaocp.org.br') });
+      }
+    });
+
+    console.log(`  Identificados ${items.length} editais sob o portal Instituto AOCP.`);
+
+    for (const item of items) {
+      await processGenericContest({ page }, org, item.nome, item.link, async ($c) => {
+        const link = $c('a').filter((i, el) => {
+          const t = $c(el).text().toLowerCase();
+          const h = $c(el).attr('href') || '';
+          return (t.includes('edital de abertura') || (t.includes('edital') && t.includes('abertura')) || h.includes('Edital_Abertura')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
+        }).first();
+        return link.length > 0 ? resolveUrl(link.attr('href'), 'https://www.institutoaocp.org.br') : null;
+      });
+    }
+  } finally {
+    await page.close();
+    await context.close();
+  }
+}
+
+async function internalScrapeGeneric(browser: Browser, org: any) {
+  console.log(`\n> Iniciando Coletor Genérico Inteligente para: ${org.nome} (${org.site_url})`);
+  
+  const context = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    viewport: { width: 1280, height: 800 }
+  });
+  const page = await context.newPage();
+  
+  try {
+    await page.goto(org.site_url, { waitUntil: 'networkidle', timeout: 35000 }).catch(e => {
+      console.log(`  [Genérico] Aviso ao acessar site: ${e.message}`);
+    });
+    await page.waitForTimeout(3000);
+    
+    const $ = cheerio.load(await page.content());
+    const links: any[] = [];
+    
+    $('a').each((i, el) => {
+      const text = $(el).text().trim();
+      const href = $(el).attr('href') || '';
+      if (href && (href.startsWith('http') || href.startsWith('/')) && text.length > 5) {
+        links.push({ text, href: resolveUrl(href, org.site_url) });
+      }
+    });
+    
+    const relevantLinks = links.filter(l => {
+      const t = l.text.toLowerCase();
+      const h = l.href.toLowerCase();
+      return t.includes('concurso') || t.includes('edital') || t.includes('aberto') || t.includes('inscric') || t.includes('oportunidade') || h.includes('concurso') || h.includes('edital');
+    });
+    
+    const uniqueLinks = Array.from(new Map(relevantLinks.map(item => [item.href, item])).values());
+    console.log(`  [Genérico] Identificados ${uniqueLinks.length} links relevantes de navegação.`);
+    
+    const targets = uniqueLinks.slice(0, 5);
+    for (const target of targets) {
+      await processGenericContest({ page }, org, target.text, target.href, async ($c) => {
+        const pdfLink = $c('a[href$=".pdf"]').filter((i, el) => {
+          const t = $c(el).text().toLowerCase();
+          const h = $c(el).attr('href') || '';
+          return (t.includes('edital') || t.includes('abertura') || h.includes('edital') || h.includes('abertura')) && !EXCLUDE_KEYWORDS.some(k => t.includes(k));
+        }).first();
+        return pdfLink.length > 0 ? resolveUrl(pdfLink.attr('href'), target.href) : null;
+      });
+    }
+  } finally {
+    await page.close();
+    await context.close();
   }
 }
 
@@ -286,7 +466,6 @@ async function processGenericContest(
     return;
   }
 
-  // Otimização: verifica se o edital já foi processado e rejeitado por não atender aos requisitos
   const alreadyDiscarded = await prisma.editalDescartado.findFirst({
     where: {
       OR: [
@@ -341,13 +520,13 @@ async function processGenericContest(
     });
 
     if (isValid && editalUrl) {
-      console.log(`    > NOVO EDITAL: ${edital.nome_edital}`);
+      console.log(`    > NOVO EDITAL DETECTADO: ${edital.nome_edital}`);
       await uploadEditalToAzure(editalUrl, org.nome, edital.id);
     } else {
-      console.log(`    > Ignorado.`);
+      console.log(`    > Ignorado (não atende a edital de abertura ou PDF ausente).`);
     }
   } catch (err: any) {
-    console.error(`    > Erro: ${err.message}`);
+    console.error(`    > Erro ao analisar detalhes do concurso: ${err.message}`);
   }
 }
 
@@ -368,7 +547,7 @@ async function uploadEditalToAzure(url: string, org: string, editalId: string) {
       data: { nome_arquivo: blobName, data_download: new Date() }
     });
   } catch (e: any) {
-    console.error(`    > Erro upload: ${e.message}`);
+    console.error(`    > Erro no upload para o Azure: ${e.message}`);
   }
 }
 
