@@ -3,6 +3,11 @@ import prisma from '../../lib/prisma';
 import { processEdital } from '../../services/processor';
 import { decryptSession } from '../../lib/session';
 
+export const config = {
+  maxDuration: 60
+};
+
+
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     let userNome = 'Sistema / Painel';
@@ -69,67 +74,72 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    // Fallback: Execução local (desenvolvimento) - Assíncrona no background para evitar timeouts HTTP
+    // Fallback: Execução local (desenvolvimento/serverless) - Síncrona para evitar congelamento em serverless (Vercel)
     if (editalId) {
-      const runSingleBackground = async () => {
-        try {
-          await processEdital(editalId);
-          
-          // Registra sucesso individual na auditoria
-          await prisma.logAuditoria.create({
-            data: {
-              usuario_id: userId,
-              usuario_nome: userNome,
-              acao: 'processamento_edital_sucesso',
-              entidade: 'edital',
-              entidade_id: editalId,
-              detalhes: `Processamento local do edital ID ${editalId} concluído com sucesso.`
-            }
-          });
+      try {
+        await processEdital(editalId);
+        
+        // Registra sucesso individual na auditoria
+        await prisma.logAuditoria.create({
+          data: {
+            usuario_id: userId,
+            usuario_nome: userNome,
+            acao: 'processamento_edital_sucesso',
+            entidade: 'edital',
+            entidade_id: editalId,
+            detalhes: `Processamento local do edital ID ${editalId} concluído com sucesso.`
+          }
+        });
 
-          await prisma.logAuditoria.create({
-            data: {
-              usuario_id: userId,
-              usuario_nome: userNome,
-              acao: 'sincronizacao_concluida',
-              entidade: 'edital',
-              detalhes: `Processamento local do edital ID ${editalId} concluído.`
-            }
-          });
-        } catch (err: any) {
-          console.error(`Erro no processamento local do edital ${editalId}:`, err);
-          
-          // Registra erro individual na auditoria
-          await prisma.logAuditoria.create({
-            data: {
-              usuario_id: userId,
-              usuario_nome: userNome,
-              acao: 'processamento_edital_erro',
-              entidade: 'edital',
-              entidade_id: editalId,
-              detalhes: `Erro no processamento local do edital ID ${editalId}: ${err.message}`
-            }
-          });
+        await prisma.logAuditoria.create({
+          data: {
+            usuario_id: userId,
+            usuario_nome: userNome,
+            acao: 'sincronizacao_concluida',
+            entidade: 'edital',
+            detalhes: `Processamento local do edital ID ${editalId} concluído.`
+          }
+        });
 
-          await prisma.logAuditoria.create({
-            data: {
-              usuario_id: userId,
-              usuario_nome: userNome,
-              acao: 'sincronizacao_erro',
-              entidade: 'edital',
-              detalhes: `Erro no processamento local do edital ID ${editalId}: ${err.message}`
-            }
-          });
-        }
-      };
+        return new Response(JSON.stringify({ message: 'Processamento do edital concluído com sucesso!' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (err: any) {
+        console.error(`Erro no processamento local do edital ${editalId}:`, err);
+        
+        // Registra erro individual na auditoria
+        await prisma.logAuditoria.create({
+          data: {
+            usuario_id: userId,
+            usuario_nome: userNome,
+            acao: 'processamento_edital_erro',
+            entidade: 'edital',
+            entidade_id: editalId,
+            detalhes: `Erro no processamento local do edital ID ${editalId}: ${err.message}`
+          }
+        });
 
-      runSingleBackground().catch(console.error);
+        await prisma.logAuditoria.create({
+          data: {
+            usuario_id: userId,
+            usuario_nome: userNome,
+            acao: 'sincronizacao_erro',
+            entidade: 'edital',
+            detalhes: `Erro no processamento local do edital ID ${editalId}: ${err.message}`
+          }
+        });
 
-      return new Response(JSON.stringify({ message: 'Processamento do edital iniciado localmente em segundo plano!' }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
+        return new Response(JSON.stringify({ 
+          message: 'Erro no processamento do edital', 
+          error: err.message 
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
     }
+
 
     // Processamento em lote local (Assíncrono no background para evitar timeouts HTTP)
     const runBatchBackground = async () => {
