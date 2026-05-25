@@ -2,6 +2,7 @@
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import prisma from '../../lib/prisma';
 import { createAuditLog } from '../../services/audit';
+import { azureStorage } from '../../services/azureStorage';
 
 const currentUser = Astro.locals.user;
 if (!currentUser) {
@@ -243,11 +244,48 @@ if (Astro.request.method === 'POST') {
       `Excluiu definitivamente o cargo "${cargoNome}" do concurso`
     );
 
-    return Astro.redirect(`/concursos/${concurso.id}?success=true`);
+  } else if (action === 'upload_edital') {
+    try {
+      const file = formData.get('edital_pdf') as File;
+      if (!file || file.size === 0) {
+        throw new Error('Por favor, selecione um arquivo PDF válido.');
+      }
+      
+      const org = concurso.edital.organizadora;
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const blobName = `${org.nome.replace(/\s+/g, '_')}/${new Date().getFullYear()}/${concurso.edital.id}.pdf`;
+      
+      await azureStorage.uploadBuffer(buffer, blobName);
+      
+      await prisma.edital.update({
+        where: { id: concurso.edital.id },
+        data: {
+          nome_arquivo: blobName,
+          data_download: new Date(),
+          status_processamento: 'pendente'
+        }
+      });
+      
+      // Registra na trilha de auditoria
+      await createAuditLog(
+        currentUser.id,
+        currentUser.nome,
+        'Enviou Edital',
+        'Concurso',
+        concurso.id,
+        `Enviou manualmente o arquivo PDF "${file.name}" para o edital do concurso.`
+      );
+      
+      return Astro.redirect(`/concursos/${concurso.id}?success=true`);
+    } catch (e: any) {
+      return Astro.redirect(`/concursos/${concurso.id}?error=${encodeURIComponent(e.message)}`);
+    }
   }
 }
 
 const success = Astro.url.searchParams.get('success') === 'true';
+const error = Astro.url.searchParams.get('error');
+
 
 // Busca os logs de auditoria correspondentes a este concurso
 const auditLogs = await prisma.logAuditoria.findMany({
@@ -293,6 +331,13 @@ const auditLogs = await prisma.logAuditoria.findMany({
     <div class="bg-green-500/10 border border-green-500/20 text-green-500 px-4 py-3 rounded-xl mb-8 text-sm flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       Dados salvos com sucesso!
+    </div>
+  )}
+
+  {error && (
+    <div class="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl mb-8 text-sm flex items-center gap-2 font-semibold">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      {error}
     </div>
   )}
 
@@ -482,6 +527,84 @@ const auditLogs = await prisma.logAuditoria.findMany({
         </p>
       </div>
 
+      <!-- Card PDF do Edital -->
+      <div class="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-4">
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7 20 7"/></svg>
+          PDF do Edital
+        </h4>
+        
+        {!concurso.edital.nome_arquivo ? (
+          <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            <input type="hidden" name="action" value="upload_edital" />
+            <div class="p-5 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-slate-50/80 hover:border-indigo-300 transition-all group relative cursor-pointer">
+              <label class="cursor-pointer flex flex-col items-center gap-2 w-full h-full">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 group-hover:text-indigo-600 transition-colors"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                <span class="text-xs font-semibold text-slate-500 group-hover:text-slate-700 transition-colors text-center">Selecione o PDF do Edital</span>
+                <span class="text-[9px] text-slate-400">Apenas arquivos .pdf</span>
+                <input name="edital_pdf" type="file" accept="application/pdf" class="hidden" id="edital-file-input" required />
+                <span id="edital-file-name" class="text-[10px] text-indigo-650 font-bold mt-1 text-center truncate max-w-full"></span>
+              </label>
+            </div>
+            <button type="submit" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-xl shadow-md shadow-indigo-100 hover:shadow-lg transition-all active:scale-[0.98] text-xs uppercase tracking-wider">
+              Enviar Edital
+            </button>
+          </form>
+        ) : (
+          <div class="space-y-4">
+            <div class="p-4 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <span class="text-[9px] text-slate-400 uppercase font-bold block mb-0.5">Arquivo Associado</span>
+                <p class="text-xs text-slate-700 font-mono truncate" title={concurso.edital.nome_arquivo.split('/').pop()}>
+                  {concurso.edital.nome_arquivo.split('/').pop()}
+                </p>
+              </div>
+              <a 
+                href={`https://storageappvidanavida.blob.core.windows.net/editalhub/${concurso.edital.nome_arquivo}`} 
+                target="_blank" 
+                class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all shrink-0"
+                title="Visualizar PDF"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </div>
+
+            <!-- Botão de extração IA individual -->
+            <button 
+              id="process-single-ia-btn" 
+              data-edital-id={concurso.edital.id}
+              class="w-full py-3 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold rounded-xl shadow-md shadow-indigo-100 hover:shadow-lg transition-all active:scale-[0.98] text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+              Extrair com IA
+            </button>
+
+            <!-- Seção de Substituição Colapsável -->
+            <details class="group border-t border-slate-100 pt-3">
+              <summary class="list-none flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-widest cursor-pointer select-none hover:text-slate-600 transition-colors">
+                <span>Substituir PDF</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 group-open:rotate-180 transition-transform"><path d="m6 9 6 6 6-6"/></svg>
+              </summary>
+              
+              <form method="POST" enctype="multipart/form-data" class="mt-3 space-y-3">
+                <input type="hidden" name="action" value="upload_edital" />
+                <div class="p-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50 hover:bg-slate-50 hover:border-indigo-300 transition-all group relative cursor-pointer">
+                  <label class="cursor-pointer flex flex-col items-center gap-1.5 w-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 group-hover:text-indigo-650 transition-colors"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    <span class="text-[10px] font-semibold text-slate-500 group-hover:text-slate-700 transition-colors text-center">Selecione outro PDF</span>
+                    <input name="edital_pdf" type="file" accept="application/pdf" class="hidden" id="replace-file-input" required />
+                    <span id="replace-file-name" class="text-[9px] text-indigo-650 font-bold text-center truncate max-w-full block mt-1"></span>
+                  </label>
+                </div>
+                <button type="submit" class="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-lg transition-all active:scale-[0.98] text-[10px] uppercase tracking-wider">
+                  Enviar Novo Arquivo
+                </button>
+              </form>
+            </details>
+          </div>
+        )}
+      </div>
+
       <div class="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm">
         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Informações do Edital</h4>
         <div class="space-y-4">
@@ -497,6 +620,7 @@ const auditLogs = await prisma.logAuditoria.findMany({
       </div>
     </div>
   </div>
+
 
   <!-- Histórico de Auditoria e Alterações -->
   <div class="bg-white border border-slate-200/80 p-8 rounded-3xl mt-8 shadow-sm">
@@ -546,4 +670,61 @@ const auditLogs = await prisma.logAuditoria.findMany({
       </div>
     )}
   </div>
+
+  <script>
+    // Atualização de nomes de arquivo no upload manual
+    const fileInput = document.getElementById('edital-file-input');
+    const fileName = document.getElementById('edital-file-name');
+    fileInput?.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file && fileName) fileName.textContent = file.name;
+    });
+
+    const replaceFileInput = document.getElementById('replace-file-input');
+    const replaceFileName = document.getElementById('replace-file-name');
+    replaceFileInput?.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file && replaceFileName) replaceFileName.textContent = file.name;
+    });
+
+    // Escuta do clique no botão "Extrair com IA"
+    const processBtn = document.getElementById('process-single-ia-btn');
+    processBtn?.addEventListener('click', async () => {
+      const editalId = processBtn.getAttribute('data-edital-id');
+      if (!editalId) return;
+
+      processBtn.setAttribute('disabled', 'true');
+      const originalHtml = processBtn.innerHTML;
+      processBtn.innerHTML = 'Disparando...';
+
+      try {
+        const res = await fetch('/api/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ editalId })
+        });
+
+        if (res.ok) {
+          // Dispara o poller global presente no DashboardLayout
+          if (typeof (window as any).startPoller === 'function') {
+            (window as any).startPoller();
+          }
+        } else {
+          let errorText = 'Falha ao iniciar processamento individual';
+          try {
+            const data = await res.json();
+            if (data.error) errorText = data.error;
+          } catch (e) {}
+          alert('Erro: ' + errorText);
+          processBtn.removeAttribute('disabled');
+          processBtn.innerHTML = originalHtml;
+        }
+      } catch (err) {
+        alert('Erro de conexão ao iniciar o processamento');
+        processBtn.removeAttribute('disabled');
+        processBtn.innerHTML = originalHtml;
+      }
+    });
+  </script>
 </DashboardLayout>
+
