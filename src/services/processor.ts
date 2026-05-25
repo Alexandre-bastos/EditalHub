@@ -116,35 +116,79 @@ export async function processEdital(editalId: string, bypassExpiryCheck = false)
 
         const fullText = "Texto extraído via Gemini Vision/Multimodal";
 
-        // 1. Criar concurso mesmo vencido para registro histórico
-        const concurso = await prisma.concurso.create({
-          data: {
-            edital_id: edital.id,
-            nome_concurso: analysis.nome_concurso || edital.nome_edital,
-            estado: analysis.estado,
-            escolaridade: analysis.escolaridade,
-            formacao: analysis.formacao,
-            profissao: analysis.profissao,
-            taxa_inscricao: analysis.taxa_inscricao,
-            salario_inicial: analysis.salario_inicial,
-            idade_minima: analysis.idade_minima,
-            idade_maxima: analysis.idade_maxima,
-            link_inscricao: analysis.link_inscricao,
-            resumo: analysis.resumo,
-            inscricao_inicio: parseRobustDate(analysis.inscricao_inicio),
-            inscricao_fim: dataFim,
-            data_prova: parseRobustDate(analysis.data_prova),
-            cargos: {
-              create: (analysis.cargos || []).map((v: any) => ({
-                nome_cargo: v.nome_cargo,
-                escolaridade: v.escolaridade,
-                salario: v.salario,
-                quantidade: v.quantidade,
-                requisitos: v.requisitos
-              }))
-            }
-          }
+        // Verificar se já existe um concurso para este edital para evitar duplicidade
+        const existingConcurso = await prisma.concurso.findFirst({
+          where: { edital_id: edital.id }
         });
+
+        let concurso;
+        if (existingConcurso) {
+          // Limpar vagas antigas
+          await prisma.vaga.deleteMany({
+            where: { concurso_id: existingConcurso.id }
+          });
+
+          // Atualizar concurso existente
+          concurso = await prisma.concurso.update({
+            where: { id: existingConcurso.id },
+            data: {
+              nome_concurso: analysis.nome_concurso || edital.nome_edital,
+              estado: analysis.estado,
+              escolaridade: analysis.escolaridade,
+              formacao: analysis.formacao,
+              profissao: analysis.profissao,
+              taxa_inscricao: analysis.taxa_inscricao,
+              salario_inicial: analysis.salario_inicial,
+              idade_minima: analysis.idade_minima,
+              idade_maxima: analysis.idade_maxima,
+              link_inscricao: analysis.link_inscricao,
+              resumo: analysis.resumo,
+              inscricao_inicio: parseRobustDate(analysis.inscricao_inicio),
+              inscricao_fim: dataFim,
+              data_prova: parseRobustDate(analysis.data_prova),
+              cargos: {
+                create: (analysis.cargos || []).map((v: any) => ({
+                  nome_cargo: v.nome_cargo,
+                  escolaridade: v.escolaridade,
+                  salario: v.salario,
+                  quantidade: v.quantidade,
+                  requisitos: v.requisitos
+                }))
+              }
+            }
+          });
+        } else {
+          // Criar concurso mesmo vencido para registro histórico
+          concurso = await prisma.concurso.create({
+            data: {
+              edital_id: edital.id,
+              nome_concurso: analysis.nome_concurso || edital.nome_edital,
+              estado: analysis.estado,
+              escolaridade: analysis.escolaridade,
+              formacao: analysis.formacao,
+              profissao: analysis.profissao,
+              taxa_inscricao: analysis.taxa_inscricao,
+              salario_inicial: analysis.salario_inicial,
+              idade_minima: analysis.idade_minima,
+              idade_maxima: analysis.idade_maxima,
+              link_inscricao: analysis.link_inscricao,
+              resumo: analysis.resumo,
+              inscricao_inicio: parseRobustDate(analysis.inscricao_inicio),
+              inscricao_fim: dataFim,
+              data_prova: parseRobustDate(analysis.data_prova),
+              cargos: {
+                create: (analysis.cargos || []).map((v: any) => ({
+                  nome_cargo: v.nome_cargo,
+                  escolaridade: v.escolaridade,
+                  salario: v.salario,
+                  quantidade: v.quantidade,
+                  requisitos: v.requisitos
+                }))
+              }
+            }
+          });
+        }
+
 
         // 2. Atualizar o edital para status 'processado' e is_valido = false para não ficar visível
         await prisma.edital.update({
@@ -192,35 +236,79 @@ export async function processEdital(editalId: string, bypassExpiryCheck = false)
     
     const fullText = "Texto extraído via Gemini Vision/Multimodal";
     
-    // Criar ou Atualizar Concurso
-    const concurso = await prisma.concurso.create({
-      data: {
-        edital_id: edital.id,
-        nome_concurso: analysis.nome_concurso,
-        estado: analysis.estado,
-        escolaridade: analysis.escolaridade,
-        formacao: analysis.formacao,
-        profissao: analysis.profissao,
-        taxa_inscricao: analysis.taxa_inscricao,
-        salario_inicial: analysis.salario_inicial,
-        idade_minima: analysis.idade_minima,
-        idade_maxima: analysis.idade_maxima,
-        link_inscricao: analysis.link_inscricao,
-        resumo: analysis.resumo,
-        inscricao_inicio: parseRobustDate(analysis.inscricao_inicio),
-        inscricao_fim: parseRobustDate(analysis.inscricao_fim),
-        data_prova: parseRobustDate(analysis.data_prova),
-        cargos: {
-          create: (analysis.cargos || []).map((v: any) => ({
-            nome_cargo: v.nome_cargo,
-            escolaridade: v.escolaridade,
-            salario: v.salario,
-            quantidade: v.quantidade,
-            requisitos: v.requisitos
-          }))
-        }
-      }
+    // Verificar se já existe um concurso para este edital para evitar duplicidade
+    const existingConcurso = await prisma.concurso.findFirst({
+      where: { edital_id: edital.id }
     });
+
+    let concurso;
+    if (existingConcurso) {
+      // Limpar vagas antigas
+      await prisma.vaga.deleteMany({
+        where: { concurso_id: existingConcurso.id }
+      });
+
+      // Atualizar concurso existente
+      concurso = await prisma.concurso.update({
+        where: { id: existingConcurso.id },
+        data: {
+          nome_concurso: analysis.nome_concurso || edital.nome_edital,
+          estado: analysis.estado,
+          escolaridade: analysis.escolaridade,
+          formacao: analysis.formacao,
+          profissao: analysis.profissao,
+          taxa_inscricao: analysis.taxa_inscricao,
+          salario_inicial: analysis.salario_inicial,
+          idade_minima: analysis.idade_minima,
+          idade_maxima: analysis.idade_maxima,
+          link_inscricao: analysis.link_inscricao,
+          resumo: analysis.resumo,
+          inscricao_inicio: parseRobustDate(analysis.inscricao_inicio),
+          inscricao_fim: parseRobustDate(analysis.inscricao_fim),
+          data_prova: parseRobustDate(analysis.data_prova),
+          cargos: {
+            create: (analysis.cargos || []).map((v: any) => ({
+              nome_cargo: v.nome_cargo,
+              escolaridade: v.escolaridade,
+              salario: v.salario,
+              quantidade: v.quantidade,
+              requisitos: v.requisitos
+            }))
+          }
+        }
+      });
+    } else {
+      // Criar ou Atualizar Concurso
+      concurso = await prisma.concurso.create({
+        data: {
+          edital_id: edital.id,
+          nome_concurso: analysis.nome_concurso || edital.nome_edital,
+          estado: analysis.estado,
+          escolaridade: analysis.escolaridade,
+          formacao: analysis.formacao,
+          profissao: analysis.profissao,
+          taxa_inscricao: analysis.taxa_inscricao,
+          salario_inicial: analysis.salario_inicial,
+          idade_minima: analysis.idade_minima,
+          idade_maxima: analysis.idade_maxima,
+          link_inscricao: analysis.link_inscricao,
+          resumo: analysis.resumo,
+          inscricao_inicio: parseRobustDate(analysis.inscricao_inicio),
+          inscricao_fim: parseRobustDate(analysis.inscricao_fim),
+          data_prova: parseRobustDate(analysis.data_prova),
+          cargos: {
+            create: (analysis.cargos || []).map((v: any) => ({
+              nome_cargo: v.nome_cargo,
+              escolaridade: v.escolaridade,
+              salario: v.salario,
+              quantidade: v.quantidade,
+              requisitos: v.requisitos
+            }))
+          }
+        }
+      });
+    }
+
 
     // Atualizar status do edital
     await prisma.edital.update({
