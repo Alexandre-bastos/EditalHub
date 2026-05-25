@@ -42,7 +42,7 @@ function parseRobustDate(dateStr: any): Date | null {
   return null;
 }
 
-function meetsEntryRequirements(analysis: any): { valid: boolean; reason?: string } {
+function meetsEntryRequirements(analysis: any, bypassExpiryCheck = false): { valid: boolean; reason?: string } {
   if (!analysis.nome_concurso || analysis.nome_concurso.trim() === "") {
     return { valid: false, reason: "Nome do concurso ausente" };
   }
@@ -56,7 +56,7 @@ function meetsEntryRequirements(analysis: any): { valid: boolean; reason?: strin
   }
 
   const hoje = new Date();
-  if (dataFim < hoje) {
+  if (dataFim < hoje && !bypassExpiryCheck) {
     return { valid: false, reason: `Inscrição encerrada em ${analysis.inscricao_fim}` };
   }
 
@@ -67,8 +67,9 @@ function meetsEntryRequirements(analysis: any): { valid: boolean; reason?: strin
   return { valid: true };
 }
 
-export async function processEdital(editalId: string) {
-  console.log(`Iniciando processamento do edital: ${editalId}`);
+export async function processEdital(editalId: string, bypassExpiryCheck = false) {
+  console.log(`Iniciando processamento do edital: ${editalId} (bypassExpiryCheck: ${bypassExpiryCheck})`);
+
 
   try {
     const edital = await prisma.edital.findUnique({
@@ -103,8 +104,9 @@ export async function processEdital(editalId: string) {
     const analysis = await geminiService.analyzeEdital(buffer);
 
     // 3. Validação dos Requisitos de Entrada
-    const validation = meetsEntryRequirements(analysis);
+    const validation = meetsEntryRequirements(analysis, bypassExpiryCheck);
     if (!validation.valid) {
+
       const dataFim = parseRobustDate(analysis.inscricao_fim);
       const hoje = new Date();
       const isExpired = dataFim && dataFim < hoje;

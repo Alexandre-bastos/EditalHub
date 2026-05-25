@@ -123,13 +123,8 @@ export const GET: APIRoute = async () => {
       };
     }
 
-    // Caso o status_processamento ainda acuse pendentes mas não haja log de sync recente nem erro,
-    // ainda consideramos ativo no processamento de IA apenas se houver editais estritamente 'pendentes'
-    if (!active && strictlyPendingCount > 0 && !errorDetails) {
-      active = true;
-      stage = 'processing';
-      message = `Processando ${strictlyPendingCount} edital(ais) com Inteligência Artificial pendentes...`;
-    }
+
+
 
     return new Response(JSON.stringify({
       active,

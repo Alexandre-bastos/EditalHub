@@ -77,7 +77,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Fallback: Execução local (desenvolvimento/serverless) - Síncrona para evitar congelamento em serverless (Vercel)
     if (editalId) {
       try {
-        await processEdital(editalId);
+        await processEdital(editalId, true);
+
         
         // Registra sucesso individual na auditoria
         await prisma.logAuditoria.create({
